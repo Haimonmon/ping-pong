@@ -5,10 +5,6 @@ class Ball:
     First ping pong ball of all time! 🔴
     """
     def __init__(self, ball_x_pos: int, ball_y_pos: int) -> None:
-        # self.window = tk.Tk()
-        # self.window.title("Test ping-pong Ball")
-        # self.window.geometry("600x400")
-
         self.ball_x_pos = ball_x_pos
         self.ball_y_pos = ball_y_pos
 
@@ -26,7 +22,7 @@ class Ball:
         pass
     
     def test_run(self) -> None:
-         self.window.mainloop()
+         
          print('Running...')
 
 

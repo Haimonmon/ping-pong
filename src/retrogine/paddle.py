@@ -16,15 +16,20 @@ class Paddle:
         self.paddle_movements = {}
 
 
-    def render_paddle(self) -> None:
+    def render(self) -> None:
         pass
 
-    def move_paddle(self) -> None:
+    def move(self) -> None:
         pass
 
     def test_run(self) -> None:
         pass
 
+    def display_movements(self) -> None:
+        pass
+
+    def edit_movements(self) -> None:
+        pass
 if __name__ == "__main__":
       paddle = Paddle()
       paddle.test_run()
