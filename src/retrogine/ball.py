@@ -58,10 +58,10 @@ class Ball:
         # * Reference [How to get the specific widget coordinates.]: https://stackoverflow.com/questions/50699664/change-coords-of-line-in-python-tkinter-canvas
         coordinates = self.playground.canvas.coords(self.ball)
         
-        if coordinates[1] <= 0 or coordinates[3] >= self.playground.height:
+        if coordinates[1] <= self.playground_coordinates['top'] or coordinates[3] >= self.playground_coordinates['bottom']:
             self.ball_dy *= -1
 
-        if coordinates[0] <= 0 or coordinates[2] >= self.playground.width:
+        if coordinates[0] <= self.playground_coordinates['left'] or coordinates[2] >= self.playground_coordinates['right']:
             self.ball_dx *= -1
 
 

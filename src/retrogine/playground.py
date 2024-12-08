@@ -26,16 +26,6 @@ class PlayGround:
          """
          return self.__canvas
     
-
-    @property
-    def height(self) -> int:
-         return self.__height
-    
-
-    @property
-    def width(self) -> int:
-         return self.__width
-    
     
     def render(self) -> None:
         pass
