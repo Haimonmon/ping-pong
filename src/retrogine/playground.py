@@ -8,24 +8,35 @@ class PlayGround:
         self.window = tk.Tk()
         self.window.title(window_title)
 
-        self.width = width
-        self.height = height
-        self.window.geometry(f"{self.width}x{self.height}")
+        self.__width = width
+        self.__height = height
+        self.window.geometry(f"{self.__width}x{self.__height}")
 
         # * Map changes
         self.color = color
 
-        self.__canvas = tk.Canvas(self.window, width = self.width, height = self.height, background = self.color)
+        self.__canvas = tk.Canvas(self.window, width = self.__width, height = self.__height, background = self.color)
         self.__canvas.pack()
         
+
     @property
-    def canvas(self):
+    def canvas(self) -> int:
          """
          Returns playground tkinter widget canvas used.
          """
          return self.__canvas
     
 
+    @property
+    def height(self) -> int:
+         return self.__height
+    
+
+    @property
+    def width(self) -> int:
+         return self.__width
+    
+    
     def render(self) -> None:
         pass
 
@@ -35,7 +46,7 @@ class PlayGround:
          Returns wall coordinates
          for using on collision logic on the pong's ball
          """
-         return {"top": 0, "left": 0, "bottom": self.height, "right": self.width}
+         return {"top": 0, "left": 0, "bottom": self.__height, "right": self.__width}
 
 
     def unrender(self) -> None:
