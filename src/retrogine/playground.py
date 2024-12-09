@@ -5,20 +5,22 @@ class PlayGround:
     Players playground or court 🏓
     """
     def __init__(self, width: int = 1200, height: int = 550, color: str = "#0D0D0D", window_title = "PongClassic") -> None:
-        self.window = tk.Tk()
-        self.window.title(window_title)
+          self.window = tk.Tk()
+          self.window.title(window_title)
 
-        self.__width = width
-        self.__height = height
-        self.window.geometry(f"{self.__width}x{self.__height}")
+          self.__width = width
+          self.__height = height
+          self.window.geometry(f"{self.__width}x{self.__height}")
 
-        # * Map changes
-        self.color = color
+          # * Map changes
+          self.color = color
 
-        self.__canvas = tk.Canvas(self.window, width = self.__width, height = self.__height, background = self.color)
-        self.__canvas.pack()
+          self.__canvas = tk.Canvas(self.window, width = self.__width, height = self.__height, background = self.color)
+          self.__canvas.pack()
+          
+          self.paddles = []
         
-
+     
     @property
     def canvas(self) -> int:
          """

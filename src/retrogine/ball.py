@@ -21,7 +21,7 @@ class Ball:
         self.playground = playground
         self.playground_coordinates = self.playground.get_wall_coordinates()
 
-        # * Starting position
+        # * Starting position at the center ;)
         self.ball_x_pos = self.playground_coordinates["right"] // 2
         self.ball_y_pos = self.playground_coordinates["bottom"] // 2
 
@@ -34,6 +34,9 @@ class Ball:
         # * Ball directions on x and y axis
         self.ball_dx = 0
         self.ball_dy = 0
+
+        # * Locking of thread to avoid critical sections of live performance of task
+        self.lock = threading.Lock()
 
         # * Sets the speed trajectory once the round starts
         self.fix_ball_speed()
@@ -64,7 +67,9 @@ class Ball:
         """
         Enable ball movements
         """
-        self.playground.canvas.move(self.ball, self.ball_dx, self.ball_dy)
+        with self.lock:
+            self.playground.canvas.move(self.ball, self.ball_dx, self.ball_dy)
+            
         self.check_boundaries()
 
 
@@ -72,7 +77,7 @@ class Ball:
         """
         Fixes the ball on its desired speed at any direction
         """
-        directions: list = [-3, -2, -1, 1 ,2 ,3]
+        directions: list = [-5, -4, -3, -2, -1, 1 ,2 ,3, 4, 5]
         self.ball_dx = random.choice(directions)
         self.ball_dy = random.choice(directions)
 
@@ -83,50 +88,47 @@ class Ball:
         self.ball_dy = int((self.ball_dy / magnitude) * self.ball_speed)
 
 
-
     def check_boundaries(self) -> None:
         """
         For collision checking of ball
         """
-        # * Reference [How to get the specific widget coordinates.]: https://stackoverflow.com/questions/50699664/change-coords-of-line-in-python-tkinter-canvas
-        coordinates: list = self.playground.canvas.coords(self.ball)
 
-        top_collision: bool = int(coordinates[1]) <= self.playground_coordinates['top']
-        bottom_collision: bool = int(coordinates[3]) >= self.playground_coordinates['bottom']
+        with self.lock:
+            # * Reference [How to get the specific widget coordinates.]: https://stackoverflow.com/questions/50699664/change-coords-of-line-in-python-tkinter-canvas
+            coordinates: list = self.playground.canvas.coords(self.ball)
 
-        left_wall_collision: bool = int(coordinates[0]) <= self.playground_coordinates['left']
-        right_wall_collision: bool = int(coordinates[2]) >= self.playground_coordinates['right']
+            top_collision: bool = int(coordinates[1]) <= self.playground_coordinates['top']
+            bottom_collision: bool = int(coordinates[3]) >= self.playground_coordinates['bottom']
 
-        out_of_bounds: bool = (int(coordinates[1]) < self.playground_coordinates['top'] - 5 or 
-                               int(coordinates[3]) > self.playground_coordinates['bottom'] + 5 or 
-                               int(coordinates[0]) < self.playground_coordinates['left'] - 5 or 
-                               int(coordinates[2]) > self.playground_coordinates['right'] + 5)
-        
-        if top_collision or bottom_collision:
-            self.ball_dy *= -1
+            left_wall_collision: bool = int(coordinates[0]) <= self.playground_coordinates['left']
+            right_wall_collision: bool = int(coordinates[2]) >= self.playground_coordinates['right']
 
-        # if left_wall_collision or right_wall_collision:
-        #     self.ball_dx *= -1
+            out_of_bounds: bool = (int(coordinates[1]) < self.playground_coordinates['top'] - 5 or 
+                                int(coordinates[3]) > self.playground_coordinates['bottom'] + 5 or 
+                                int(coordinates[0]) < self.playground_coordinates['left'] - 5 or 
+                                int(coordinates[2]) > self.playground_coordinates['right'] + 5)
+            
+            if top_collision or bottom_collision:
+                self.ball_dy *= -1
 
-        if out_of_bounds:
-            self.reset_ball()
+            # if left_wall_collision or right_wall_collision:
+            #     self.ball_dx *= -1
 
+            if out_of_bounds:
+                # * Resets ball Position in order to reset the round and replay it and have fun again :)
+                self.playground.canvas.coords(self.ball, self.ball_x_pos - self.ball_size, self.ball_y_pos - self.ball_size, self.ball_x_pos + self.ball_size, self.ball_y_pos + self.ball_size)
+                self.fix_ball_speed()
+    
 
-    def reset_ball(self) -> None:
-        """
-        Reset's ball stats and position for the next round
-        """
-        self.playground.canvas.coords(self.ball, self.ball_x_pos - self.ball_size, self.ball_y_pos - self.ball_size, self.ball_x_pos + self.ball_size, self.ball_y_pos + self.ball_size)
-
-        # * Reset ball speed =🔴
-        self.fix_ball_speed()
-
+    def set_ball_speed(self, speed:int) -> None:
+        with self.lock:
+            self.ball_speed = speed
 
     
-    def set_ball_speed(self, speed) -> None:
-        self.ball_speed = speed
+    def check_paddle_boundaries(self) -> None:
+        pass
 
- 
+
 if __name__ == "__main__":
     ball = Ball()
     ball.test_run()
