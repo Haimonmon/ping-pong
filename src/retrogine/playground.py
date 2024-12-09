@@ -26,8 +26,11 @@ class PlayGround:
          """
          return self.__canvas
     
-    
+
     def render(self) -> None:
+        """
+        Displays court designs
+        """
         pass
 
 
