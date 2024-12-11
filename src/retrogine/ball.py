@@ -8,18 +8,23 @@ import tkinter as tk
 class NoPlayground(Exception):
     pass
 
+class TheFlash(Exception):
+    pass
 
 class Ball:
     """
     First ping pong ball of all time! 🔴
     """
-    def __init__(self, playground: object, ball_size: int = 10, ball_color: str = "red", ball_speed: float = 5.5) -> None:
+    def __init__(self, playground: object, ball_size: int = 10, ball_color: str = "red", ball_speed: float = 4) -> None:
         if not playground:
             raise NoPlayground("The pong no where to be placed amigo 🏓")
+        
+        if ball_speed >= 9:
+            raise TheFlash(f'Cant handle that speed for now ⚡: {ball_speed}')
 
         # * Object PlayGround()
         self.playground = playground
-        self.playground_coordinates = self.playground.get_wall_coordinates()
+        self.playground_coordinates = self.playground.wall_coordinates
 
         # * Starting position at the center ;)
         self.ball_x_pos = self.playground_coordinates["right"] // 2
@@ -73,48 +78,62 @@ class Ball:
         self.check_boundaries()
 
 
-    def fix_ball_speed(self) -> None:
+    def fix_ball_speed(self, recursion_attempt: int = 0) -> None:
         """
         Fixes the ball on its desired speed at any direction
         """
-        directions: list = [-5, -4, -3, -2, -1, 1 ,2 ,3, 4, 5]
+        # * Set default value to avoid recursion stacking :>
+        if recursion_attempt >= 4:
+            self.ball_dx = 2 
+            self.ball_dy = -2
+            return
+        
+        directions: list = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]
         self.ball_dx = random.choice(directions)
         self.ball_dy = random.choice(directions)
 
         # * Pythagoream theorem
         magnitude = math.sqrt(self.ball_dx**2 + self.ball_dy**2)
+        
+        # ! To avoid dx, dy both 0 so it will not cause any errors
+        if self.ball_dx == 0 and self.ball_dy == 0:
+            return self.fix_ball_speed(recursion_attempt + 1)
 
         self.ball_dx = int((self.ball_dx / magnitude) * self.ball_speed)
         self.ball_dy = int((self.ball_dy / magnitude) * self.ball_speed)
+
+        # ! Ensures the ball will not be perfect vertical trajectory
+        if self.ball_dx == 0:
+            return self.fix_ball_speed(recursion_attempt + 1)
 
 
     def check_boundaries(self) -> None:
         """
         For collision checking of ball
         """
-
         with self.lock:
             # * Reference [How to get the specific widget coordinates.]: https://stackoverflow.com/questions/50699664/change-coords-of-line-in-python-tkinter-canvas
             coordinates: list = self.playground.canvas.coords(self.ball)
 
-            top_collision: bool = int(coordinates[1]) <= self.playground_coordinates['top']
-            bottom_collision: bool = int(coordinates[3]) >= self.playground_coordinates['bottom']
+            top_collision: bool = int(coordinates[1]) <= self.playground_coordinates['top'] - self.playground.wall_thickness or int(coordinates[1]) <= self.playground_coordinates['top']
+            bottom_collision: bool = int(coordinates[3]) >= self.playground_coordinates['bottom'] + self.playground.wall_thickness or int(coordinates[3]) >= self.playground_coordinates['bottom']
 
-            left_wall_collision: bool = int(coordinates[0]) <= self.playground_coordinates['left']
-            right_wall_collision: bool = int(coordinates[2]) >= self.playground_coordinates['right']
+            left_wall_collision: bool = int(coordinates[0]) <= self.playground_coordinates['left'] - self.playground.wall_thickness or int(coordinates[0]) <= self.playground_coordinates['left']
+            right_wall_collision: bool = int(coordinates[2]) >= self.playground_coordinates['right'] + self.playground.wall_thickness or int(coordinates[2]) >= self.playground_coordinates['right']
 
-            out_of_bounds: bool = (int(coordinates[1]) < self.playground_coordinates['top'] - 5 or 
-                                int(coordinates[3]) > self.playground_coordinates['bottom'] + 5 or 
-                                int(coordinates[0]) < self.playground_coordinates['left'] - 5 or 
-                                int(coordinates[2]) > self.playground_coordinates['right'] + 5)
+            out_of_bounds: bool = (int(coordinates[1]) < self.playground_coordinates['top'] - (self.playground.wall_thickness - 5) or 
+                                int(coordinates[3]) > self.playground_coordinates['bottom'] + (self.playground.wall_thickness + 5) or 
+                                int(coordinates[0]) < self.playground_coordinates['left'] - (self.playground.wall_thickness - 5) or 
+                                int(coordinates[2]) > self.playground_coordinates['right'] + (self.playground.wall_thickness) + 5)
             
             if top_collision or bottom_collision:
                 self.ball_dy *= -1
 
             # if left_wall_collision or right_wall_collision:
             #     self.ball_dx *= -1
-
+            
             if out_of_bounds:
+                print('Out of bounds')
                 # * Resets ball Position in order to reset the round and replay it and have fun again :)
                 self.playground.canvas.coords(self.ball, self.ball_x_pos - self.ball_size, self.ball_y_pos - self.ball_size, self.ball_x_pos + self.ball_size, self.ball_y_pos + self.ball_size)
                 self.fix_ball_speed()
