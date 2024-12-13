@@ -1,10 +1,7 @@
 import tkinter as tk
 
-class WallSegmentError(Exception):
-     pass
-
-class InvalidCoordinates(Exception):
-     pass
+from typing import List, Tuple
+from .wall import Wall
 
 class PlayGround:
      """
@@ -17,93 +14,103 @@ class PlayGround:
           self.__width = width
           self.__height = height
           self.window.geometry(f"{self.__width}x{self.__height}")
+         
 
           # * Map states
           self.color = color
+          self.window.configure(background = self.color)
           self.__wall_thickness = wall_thickness
 
-          # * Default map wall coordinates
-          self.wall_coordinates_segments = {
-              "top": [(0, 0), (200, 0), (400, 0), (self.__width, 0), (600,0)],
-              "bottom": [(0, self.__height), (200, self.__height), (400, self.__height), (self.__width, self.__height)],
-              "left": [(0, 0), (0, 200), (0, 500), (0, self.__height)],
-              "right": [(500, 0), (500, self.__height)]}
-          
-          self.check_wall_segments()
+          self.__platform = None
+          self.render() 
 
-          self.__canvas = tk.Canvas(self.window, width = self.__width, height = self.__height, background = self.color)
-          self.__canvas.pack()
+          # * Walls 🧱
+          self.__wall = None
+
+          # * Default wall coordinates for now
+          self.create_walls(
+               [
+                    # * Top side Walls
+                    [(0, 0),(100,0)], [(400, 0), (self.__width, 0)],
+                    # * Bottom side Walls
+                    [(0, self.__height), (100, self.__height)], [(400, self.__height), (self.__width, self.__height)],
+                    # * Left side Walls
+                    [(0, 0), (0, 150)], [(0, 450), (0, self.__height)],
+                    # * Right side Walls
+                    [(self.__width, 0), (self.__width, self.__height)]
+               ]
+          )
           
-          self.paddles = []
+          # * Paddles 🏓
+          self.__paddles = []
 
  
      @property
-     def canvas(self) -> int:
+     def platform(self) -> int:
           """
           Returns playground tkinter widget canvas used.
           """
-          return self.__canvas
+          return self.__platform
     
 
      @property
-     def wall_thickness(self) -> int:
-          return self.__wall_thickness
-    
-
-     @property
-     def wall_coordinates(self) -> dict:
-         """
-         Returns wall coordinates
-         for using on collision logic on the pong's ball
-         """
-         return {"top": 0, "left": 0, "bottom": self.__height, "right": self.__width}
+     def wall(self) -> object:
+          """
+          Returns playground wallings
+          """
+          return self.__wall
      
 
-     def check_wall_segments(self, wall_coordinates: int = None) -> bool:
+     @property
+     def paddles(self) -> List:
           """
-          Checks if wall coordinates given are valid
+          Returns a List of Paddle objects
           """
-          for wall_side, coordinates in self.wall_coordinates_segments.items():
+          return self.__paddles
+     
 
-               if (len(coordinates) % 2 == 1):
-                    raise InvalidCoordinates(f'Coordinates on {wall_side} side needs a partner for ending and starting point. Invalid: {coordinates}')
+     def create_walls(self, coordinates: List[List[Tuple[int,int]]]) -> None:
+          """
+          Creates the platform Walls and set it as an Object
+
+          Example coordinates:
+          ```python
+            create_walls(
+               [
+                    # * Top Walls
+                    [(0, 0), (200, 0)], [(400, 0), (self.__width, 0)],
+                    # * Bottom Walls
+                    [(0, self.__height), (200, self.__height)], [(400, self.__height), (self.__width, self.__height)],
+                    # * Left Walls
+                    [(0, 0), (0, 200)], [(0, 500), (0, self.__height)],
+                    # * Right Walls
+                    [(500, 0), (500, self.__height)]
+               ]
+          )
+
+          ```
+          [ ♻️ Note ]: Walls are only valid for Horizontal and Vertical positions for now.
+          """
+          self.__wall = Wall(coordinates, self.__wall_thickness, self.__platform, self.__width, self.__height)
                
-               for i in range(0, len(coordinates) - 1, 2):
-
-                    starting_wall = coordinates[i]
-                    ending_wall = coordinates[i + 1]
-
-                    is_starting_wall_exceeds = any(coord > limit or coord < 0 for coord, limit in zip(starting_wall, (self.__width, self.__height)))
-                    is_ending_wall_exceeds = any(coord > limit or coord < 0 for coord, limit in zip(ending_wall, (self.__width, self.__height)))
-
-                    if is_starting_wall_exceeds or is_ending_wall_exceeds:
-                         raise WallSegmentError(
-                              f"Invalid wall coordinates on the '{wall_side}' side: {coordinates}. "
-                              f"Coordinates exceed the bounds (width={self.__width}, height={self.__height})."
-                         )
-                         
-               print()
-               return True
-
-     def change_default_map(self) -> None:
-          """
-          For customization of maps or DIY maps, just need coordinates of each obstacles
-          """
-          pass
-     
 
      def render(self) -> None:
           """
           Displays court designs
           """
-          pass
+          self.__platform = tk.Canvas(self.window, width=self.__width, height=self.__height, background=self.color, highlightthickness=0, bd=0)
+          self.__platform.pack()
 
 
      def unrender(self) -> None:
           """
           To save memory consumption
           """
-          self.__canvas.delete("all")
+          self.__platform.delete("all")
+
+
+     def config_playground_style(self, **kwargs) -> None:
+          self.window.configure(**kwargs)
 
 
      def test_run(self) -> None:
@@ -112,7 +119,12 @@ class PlayGround:
 
 
 if __name__ == "__main__":
-      playground = PlayGround()
+     playground = PlayGround()
      #  playground.test_run()
      #  print(playground.canvas)
      #  print("wall coordinates: ", playground.get_wall_coordinates())
+
+
+     # TODO:
+     # ! Add customizable wall coordinates for DIY maps in the future
+     # ! Possible add lockings

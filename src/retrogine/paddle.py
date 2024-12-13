@@ -30,6 +30,12 @@ class Paddle:
 
     def edit_movements(self) -> None:
         pass
+    
 if __name__ == "__main__":
       paddle = Paddle()
       paddle.test_run()
+
+      # TODO:
+      # ! Add paddle render
+      # ! Add paddle control customization , this can help for seperate player paddle key handlings
+      # ! Add locking and threading

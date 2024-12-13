@@ -1,7 +1,7 @@
-import retrogine as eng
+import RetroGine as retro
 
 if __name__ == "__main__":
-      playground = eng.PlayGround(width = 1000, height = 400)
+      playground = retro.PlayGround(width = 600, height = 600, window_title='Pong Retro Engine Testing')
       playground.test_run()
 
       # * References will be displayed here

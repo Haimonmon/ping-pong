@@ -1,3 +1,7 @@
+"""
+Retro Engine
+"""
+
 from .ball import Ball
 from .paddle import Paddle
 from .playground import PlayGround
