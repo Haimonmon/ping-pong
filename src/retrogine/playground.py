@@ -1,7 +1,13 @@
+import random
+import threading
 import tkinter as tk
 
-from typing import List, Tuple
+from .ball import Ball
 from .wall import Wall
+from .paddle import Paddle
+
+from typing import List, Tuple
+
 
 class PlayGround:
      """
@@ -28,12 +34,12 @@ class PlayGround:
           self.__wall = None
 
           # * Default wall coordinates for now
-          self.create_walls(
+          self.add_walls(
                [
                     # * Top side Walls
                     [(0, 0),(100,0)], [(400, 0), (self.__width, 0)],
                     # * Bottom side Walls
-                    [(0, self.__height), (100, self.__height)], [(400, self.__height), (self.__width, self.__height)],
+                    [(0, self.__height), (250, self.__height)], [(400, self.__height), (self.__width, self.__height)],
                     # * Left side Walls
                     [(0, 0), (0, 150)], [(0, 450), (0, self.__height)],
                     # * Right side Walls
@@ -42,7 +48,10 @@ class PlayGround:
           )
           
           # * Paddles 🏓
-          self.__paddles = []
+          self.__paddles = None
+
+          # * Pong Balls 🔴
+          self.__balls = None
 
  
      @property
@@ -69,9 +78,17 @@ class PlayGround:
           return self.__paddles
      
 
-     def create_walls(self, coordinates: List[List[Tuple[int,int]]]) -> None:
+     @property
+     def platform_dimension(self) -> dict:
           """
-          Creates the platform Walls and set it as an Object
+          Returns an object contains the dimension of platform to be played with
+          """
+          return {'width': self.__width, 'height': self.__height}
+     
+
+     def add_walls(self, coordinates: List[List[Tuple[int,int]]]) -> None:
+          """
+          Adds the platform Walls on the given playground
 
           Example coordinates:
           ```python
@@ -93,6 +110,20 @@ class PlayGround:
           """
           self.__wall = Wall(coordinates, self.__wall_thickness, self.__platform, self.__width, self.__height)
                
+
+     def add_pong_ball(self, color: str = "red", speed: float = 4, size: int = 10, num: int = 1) -> None:
+          """
+          Adds pong ball on the PLayground
+          """
+          self.balls = BallManager(self)
+          self.balls.add_ball(color, speed, size, num)
+     
+     
+     def add_paddle(self) -> None:
+          """
+          Adds paddle on the PLayground
+          """
+          pass
 
      def render(self) -> None:
           """
@@ -117,6 +148,69 @@ class PlayGround:
           print('Welcome to the Ping pong\'s PlayGround')
           self.window.mainloop()
 
+
+class MaximumPongBalls(Exception):
+     pass
+
+class BallManager:
+     """
+     Manages Ball on the Playground by: Creating, Customize
+     """
+     def __init__(self, playground: PlayGround):
+          self.playground = playground
+
+          self.MAX_BALL = 10
+
+          self.balls = []
+
+
+     def add_ball(self, color, speed, size, num) -> None:
+          if (color == 'random'):
+               ball_color = self.color_randomizer()
+          else:
+               ball_color = color
+
+          if (size == 'random'):
+               ball_size = self.size_randomizer()
+          else:
+               ball_size = size
+
+          if (speed == 'random'):
+               ball_speed = self.speed_randomizer()
+          else:
+               ball_speed = speed
+          
+          for _ in range(num):
+               self.create_ball(ball_size, ball_color, ball_speed)
+          
+          print(f'Successfully added {num} balls 🏓')
+
+     
+     def create_ball(self, ball_size, ball_color, ball_speed) -> None:
+          """
+          Creates Ball Object on the Playground
+          """
+          if len(self.balls) >= self.MAX_BALL:
+               raise MaximumPongBalls(f"Number of Pong Ball Reach Maximum limit of {self.MAX_BALL}. ⚡")
+
+          ball = Ball(self.playground, ball_size, ball_color, ball_speed)
+          self.balls.append(ball)
+
+
+     def color_randomizer(self) -> str:
+          colors = ['red', 'blue', 'green', 'yellow', 'purple']
+          return random.choice(colors)
+
+     def size_randomizer(self) -> int:
+          return random.randint(8, 20)  
+
+     def speed_randomizer(self) -> float:
+          return random.uniform(2.0, 6.0)
+
+
+class PaddleManager:
+     def __init__(self, playground: PlayGround):
+          self.playground = playground
 
 if __name__ == "__main__":
      playground = PlayGround()
