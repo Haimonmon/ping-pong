@@ -4,6 +4,7 @@ import random
 import threading
 import tkinter as tk
 
+from typing import Tuple
 
 class NoPlayground(Exception):
     pass
@@ -90,22 +91,42 @@ class CollisionHandler:
                 ball_bottom = coordinates[3]
 
                 for wall in self.playground.wall.coordinates:
-                    wall_start = wall[0]
-                    wall_end = wall[1]
+                    bottom_side: Tuple = wall[0], wall[1]  
+                    top_side: Tuple = wall[2], wall[3]
+                    corner_left: Tuple = wall[2], [4]
                     
-                    # * Checks if horizontal
-                    if wall_start[1] == wall_end[1]:
-                        wall_y = wall_start[1]
-                        if wall_start[0] <= ball_right and wall_end[0] >= ball_left and ball_top <= wall_y <= ball_bottom:
+                    horizontal_wall =  bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
+                    vertical_wall = bottom_side[0][0] == bottom_side[1][0] or top_side[0][0] == top_side[1][0]
+
+                    # * Check for horizontal wall collision
+                    if horizontal_wall:
+
+                        if bottom_side[0][0] <= ball_right and bottom_side[1][0] >= ball_left and ball_top <= bottom_side[0][1] <= ball_bottom:
                             self.ball.physics.reverse_y_direction()
-                            break  
-                    
-                    # * Checks if vertical
-                    elif wall_start[0] == wall_end[0]:  
-                        wall_x = wall_start[0]
-                        if wall_start[1] <= ball_bottom and wall_end[1] >= ball_top and ball_left <= wall_x <= ball_right:
+                            break
+
+                        if bottom_side[0][0] <= ball_right and bottom_side[1][0] >= ball_left and ball_top <= top_side[0][1] <= ball_bottom:
+                            self.ball.physics.reverse_y_direction()
+                            break
+
+                    # * Check for vertical wall collision
+                    if vertical_wall:
+                        if (ball_left <= bottom_side[0][0] <= ball_right) and bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top:
+                            # 172.0 192.0
+                            print(bottom_side)
                             self.ball.physics.reverse_x_direction()
                             break
+
+                        if (ball_left <= top_side[0][0] <= ball_right) and bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top:
+                            self.ball.physics.reverse_x_direction()
+                            break
+
+                        if bottom_side[0][0] <= ball_right and bottom_side[1][0] >= ball_left and ball_top <= top_side[0][1] <= ball_bottom:
+                            self.ball.physics.reverse_y_direction()
+                            break
+
+
+
                 
                     out_of_bounds: bool = (
                             ball_left < -10 or
@@ -116,17 +137,7 @@ class CollisionHandler:
         
                     if out_of_bounds:
                         self.ball.physics.reset_direction()
-                # top_collision: bool = int(coordinates[1]) <= self.playground_coordinates['top'] - self.playground.wall_thickness or int(coordinates[1]) <= self.playground_coordinates['top']
-                # bottom_collision: bool = int(coordinates[3]) >= self.playground_coordinates['bottom'] + self.playground.wall_thickness or int(coordinates[3]) >= self.playground_coordinates['bottom']
-
-                # left_wall_collision: bool = int(coordinates[0]) <= self.playground_coordinates['left'] - self.playground.wall_thickness or int(coordinates[0]) <= self.playground_coordinates['left']
-                # right_wall_collision: bool = int(coordinates[2]) >= self.playground_coordinates['right'] + self.playground.wall_thickness or int(coordinates[2]) >= self.playground_coordinates['right']
-
-                # out_of_bounds: bool = (int(coordinates[1]) < self.playground_coordinates['top'] - (self.playground.wall_thickness - 5) or 
-                #                     int(coordinates[3]) > self.playground_coordinates['bottom'] + (self.playground.wall_thickness + 5) or 
-                #                     int(coordinates[0]) < self.playground_coordinates['left'] - (self.playground.wall_thickness - 5) or 
-                #                     int(coordinates[2]) > self.playground_coordinates['right'] + (self.playground.wall_thickness) + 5)
-                
+                 
             # if top_collision or bottom_collision:
             #     self.ball.physics.reverse_y_direction()
 
@@ -196,12 +207,10 @@ class PhysicsHandler:
 
 
     def reverse_x_direction(self) -> None:
-        
             self.ball.ball_dx *= -1
 
 
     def reverse_y_direction(self) -> None:
-        
             self.ball.ball_dy *= -1
 
 

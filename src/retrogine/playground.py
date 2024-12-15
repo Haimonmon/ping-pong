@@ -13,19 +13,19 @@ class PlayGround:
      """
      Players playground or court 🏓
      """
-     def __init__(self, width: int = 500, height: int = 600, color: str = "#0D0D0D", window_title: str = "PongClassic", wall_thickness: int = 20) -> None:
+     def __init__(self, platform_width: int = 500, platform_height: int = 600, color: str = "#0D0D0D", window_title: str = "PongClassic", wall_thickness: int = 20) -> None:
           self.window = tk.Tk()
           self.window.title(window_title)
 
-          self.__width = width
-          self.__height = height
-          self.window.geometry(f"{self.__width}x{self.__height}")
+          self.__platform_width = platform_width
+          self.__platform_height = platform_height
+          self.window.geometry(f"{self.__platform_width}x{self.__platform_height}")
          
 
           # * Map states
           self.color = color
           self.window.configure(background = self.color)
-          self.__wall_thickness = wall_thickness
+          self.wall_thickness = wall_thickness
 
           self.__platform = None
           self.render() 
@@ -37,13 +37,15 @@ class PlayGround:
           self.add_walls(
                [
                     # * Top side Walls
-                    [(0, 0),(100,0)], [(400, 0), (self.__width, 0)],
+                    [(0, 0),(100,0)], [(400, 0), (self.__platform_width, 0)],
                     # * Bottom side Walls
-                    [(0, self.__height), (250, self.__height)], [(400, self.__height), (self.__width, self.__height)],
+                    [(0, self.__platform_height), (250, self.__platform_height)], [(400, self.__platform_height), (self.__platform_width, self.__platform_height)],
                     # * Left side Walls
-                    [(0, 0), (0, 150)], [(0, 450), (0, self.__height)],
+                    [(0, 0), (0, 150)], [(0, 450), (0, self.__platform_height)],
                     # * Right side Walls
-                    [(self.__width, 0), (self.__width, self.__height)]
+                    [(self.__platform_width, 0), (self.__platform_width, self.__platform_height)],
+
+                    [(200,200), (200,350)]
                ]
           )
           
@@ -83,10 +85,10 @@ class PlayGround:
           """
           Returns an object contains the dimension of platform to be played with
           """
-          return {'width': self.__width, 'height': self.__height}
+          return {'width': self.__platform_width, 'height': self.__platform_height}
      
 
-     def add_walls(self, coordinates: List[List[Tuple[int,int]]]) -> None:
+     def add_walls(self, coordinates: List[List[Tuple[int,int]]], color: str = "white") -> None:
           """
           Adds the platform Walls on the given playground
 
@@ -95,20 +97,20 @@ class PlayGround:
             create_walls(
                [
                     # * Top Walls
-                    [(0, 0), (200, 0)], [(400, 0), (self.__width, 0)],
+                    [(0, 0), (200, 0)], [(400, 0), (self.__platform_width, 0)],
                     # * Bottom Walls
-                    [(0, self.__height), (200, self.__height)], [(400, self.__height), (self.__width, self.__height)],
+                    [(0, self.__platform_height), (200, self.__platform_height)], [(400, self.__platform_height), (self.__platform_width, self.__platform_height)],
                     # * Left Walls
-                    [(0, 0), (0, 200)], [(0, 500), (0, self.__height)],
+                    [(0, 0), (0, 200)], [(0, 500), (0, self.__platform_height)],
                     # * Right Walls
-                    [(500, 0), (500, self.__height)]
+                    [(500, 0), (500, self.__platform_height)]
                ]
           )
 
           ```
           [ ♻️ Note ]: Walls are only valid for Horizontal and Vertical positions for now.
           """
-          self.__wall = Wall(coordinates, self.__wall_thickness, self.__platform, self.__width, self.__height)
+          self.__wall = Wall(coordinates, self, color)
                
 
      def add_pong_ball(self, color: str = "red", speed: float = 4, size: int = 10, num: int = 1) -> None:
@@ -129,7 +131,7 @@ class PlayGround:
           """
           Displays court designs
           """
-          self.__platform = tk.Canvas(self.window, width=self.__width, height=self.__height, background=self.color, highlightthickness=0, bd=0)
+          self.__platform = tk.Canvas(self.window, width=self.__platform_width, height=self.__platform_height, background=self.color, highlightthickness=0, bd=0)
           self.__platform.pack()
 
 

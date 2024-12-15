@@ -14,16 +14,17 @@ class Wall:
     """
     Contains the walls around the playground or playfield 🧱
     """
-    def __init__(self, wall_coordinates_segments: dict, thickness: float, platform: tk.Canvas, platform_width: int, platform_height: int, color: str = "white"):
+    def __init__(self, wall_coordinates_segments: List, playground: object, color: str = "white"):
         self.wall_coordinates_segments = wall_coordinates_segments
-        self.thickness = thickness
+        self.thickness = playground.wall_thickness
         self.color = color
 
-        self.__platform = platform
-        self.__platform_width = platform_width
-        self.__platform_height = platform_height
+        self.__platform = playground.platform
+        self.__platform_width = playground.platform_dimension['width']
+        self.__platform_height = playground.platform_dimension['height']
 
         self.check_walls()
+        self.apply_thickness()
         self.render()
 
 
@@ -36,8 +37,27 @@ class Wall:
         """
         Displays all of the wall on the given playground tkinter canvas
         """
-        for start, end in self.wall_coordinates_segments:
-            self.__platform.create_line(start[0], start[1], end[0], end[1], fill=self.color, width=self.thickness)
+        for start_bottom, end_bottom, start_top, end_top in self.wall_coordinates_segments:
+            self.__platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='blue')
+            self.__platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='blue')
+
+            horizontal_wall = start_bottom[1] == end_bottom[1]
+            vertical_wall = start_bottom[0] == end_bottom[0]
+
+            if horizontal_wall:
+                self.__platform.create_rectangle(
+                    start_bottom[0], start_bottom[1] + self.thickness, 
+                    end_bottom[0], end_bottom[1], 
+                    fill=self.color, outline="blue"
+                )
+
+            elif vertical_wall:
+                
+                self.__platform.create_rectangle(
+                    start_bottom[0] + self.thickness, start_bottom[1], 
+                    end_bottom[0], end_bottom[1], 
+                    fill=self.color, outline="blue"
+                )
 
 
     def check_walls(self) -> None:
@@ -58,11 +78,68 @@ class Wall:
                         f"Coordinates exceed the bounds (width={self.__platform_width}, height={self.__platform_height})."
                     )
             
+
     def is_wall_exceeds(self, wall_num: int) -> None:
         """
         checks if the given wall_num exceeds on its limit
         """
         return any(coord > limit or coord < 0 for coord, limit in zip(wall_num, (self.__platform_width, self.__platform_height)))
 
+    
+    def apply_thickness(self) -> None:
+        """
+        Applies thickness to the walls by adjusting coordinates for both horizontal and vertical walls.
+        """
+
+        thickened_walls = []
+
+        half_thickness = self.thickness / 2
+
+        for start, end in self.wall_coordinates_segments:
+
+            horizontal_wall = start[1] == end[1]
+            vertical_wall = start[0] == end[0]
+
+            if horizontal_wall:
+                thickened_walls.append(
+                    [
+                        (start[0] - half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] - half_thickness),
+                        (start[0] - half_thickness, start[1] + half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                    ]
+                )
+
+            elif vertical_wall:
+                thickened_walls.append(
+                    [
+                        # * Top Side
+                        (start[0] - half_thickness, start[1] - half_thickness), (end[0] - half_thickness, end[1] + half_thickness),
+                        # * Bottom Side
+                        (start[0] + half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                    ]
+                )
+            
+        
+        self.wall_coordinates_segments = thickened_walls
+
 if __name__ == "__main__":
     pass
+
+# if horizontal_wall:
+#                 thickened_walls.append(
+#                     {
+#                         'top': ((start[0] - half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] - half_thickness)),
+#                         'bottom': ((start[0] - half_thickness, start[1] + half_thickness), (end[0] + half_thickness, end[1] + half_thickness)),
+#                         'left': ((start[0] - half_thickness, start[1] - half_thickness), (start[0] - half_thickness, start[1] + half_thickness)),
+#                         'right': ((end[0] + half_thickness, end[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness))
+#                     }
+#                 )
+
+#             elif vertical_wall:
+#                 thickened_walls.append(
+#                     {
+#                         'top': ((start[0] - half_thickness, start[1] - half_thickness), (end[0] - half_thickness, end[1] + half_thickness)),
+#                         'bottom': ((start[0] + half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness)),
+#                         'left': ((start[0] - half_thickness, start[1] - half_thickness), (start[0] + half_thickness, start[1] - half_thickness)),
+#                         'right': ((end[0] - half_thickness, end[1] + half_thickness), (end[0] + half_thickness, end[1] + half_thickness))
+#                     }
+#                 )
