@@ -34,26 +34,28 @@ class PlayGround:
           self.__wall = None
 
           # * Default wall coordinates for now
-          self.add_walls(
-               [
-                    # * Top side Walls
-                    [(0, 0),(100,0)], [(400, 0), (self.__platform_width, 0)],
-                    # * Bottom side Walls
-                    [(0, self.__platform_height), (250, self.__platform_height)], [(400, self.__platform_height), (self.__platform_width, self.__platform_height)],
-                    # * Left side Walls
-                    [(0, 0), (0, 150)], [(0, 450), (0, self.__platform_height)],
-                    # * Right side Walls
-                    [(self.__platform_width, 0), (self.__platform_width, self.__platform_height)],
+          
+          # self.add_walls(
+          #      [
+          #           # * Top side Walls
+          #           [(0, 0),(100,0)], [(400, 0), (self.__platform_width, 0)],
+          #           # * Bottom side Walls
+          #           [(0, self.__platform_height), (250, self.__platform_height)], [(400, self.__platform_height), (self.__platform_width, self.__platform_height)],
+          #           # * Left side Walls
+          #           [(0, 0), (0, 150)], [(0, 450), (0, self.__platform_height)],
+                    
+          #           # * Right side Walls
+          #           [(self.__platform_width, 200), (self.__platform_width, 400)],
 
-                    [(200,205), (200,355)],
-                    [(300,205), (300,355)],
-                    [(350,205), (350,355)],
-                    [(200,200), (324,200)]
-               ]
-          )
+          #           # * Testing Middle Obstacle
+          #           [(200,205), (200,355)],
+
+          #           [(700,205), (700,355)]
+          #      ]
+          # )
           
           # * Paddles 🏓
-          self.__paddles = None
+          self.__paddles = []
 
           # * Pong Balls 🔴
           self.__balls = None
@@ -76,7 +78,7 @@ class PlayGround:
      
 
      @property
-     def paddles(self) -> List:
+     def paddles(self) -> List[object]:
           """
           Returns a List of Paddle objects
           """
@@ -124,11 +126,14 @@ class PlayGround:
           self.balls.add_ball(color, speed, size, num)
      
      
-     def add_paddle(self) -> None:
+     def add_paddle(self, height: float, width: float,position: Tuple[int, int, str], keys: str, controlled: str) -> None:
           """
           Adds paddle on the PLayground
           """
-          pass
+          print('lmao', position)
+          paddle = Paddle(self, position, keys, height, width, controlled)
+          self.__paddles.append(paddle)
+
 
      def render(self) -> None:
           """
