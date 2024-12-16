@@ -45,7 +45,10 @@ class PlayGround:
                     # * Right side Walls
                     [(self.__platform_width, 0), (self.__platform_width, self.__platform_height)],
 
-                    [(200,200), (200,350)]
+                    [(200,205), (200,355)],
+                    [(300,205), (300,355)],
+                    [(350,205), (350,355)],
+                    [(200,200), (324,200)]
                ]
           )
           

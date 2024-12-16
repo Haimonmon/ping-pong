@@ -44,20 +44,20 @@ class Wall:
             horizontal_wall = start_bottom[1] == end_bottom[1]
             vertical_wall = start_bottom[0] == end_bottom[0]
 
-            if horizontal_wall:
-                self.__platform.create_rectangle(
-                    start_bottom[0], start_bottom[1] + self.thickness, 
-                    end_bottom[0], end_bottom[1], 
-                    fill=self.color, outline="blue"
-                )
+            # if horizontal_wall:
+            #     self.__platform.create_rectangle(
+            #         start_bottom[0], start_bottom[1] + self.thickness, 
+            #         end_bottom[0], end_bottom[1], 
+            #         fill=self.color, outline="blue"
+            #     )
 
-            elif vertical_wall:
+            # elif vertical_wall:
                 
-                self.__platform.create_rectangle(
-                    start_bottom[0] + self.thickness, start_bottom[1], 
-                    end_bottom[0], end_bottom[1], 
-                    fill=self.color, outline="blue"
-                )
+            #     self.__platform.create_rectangle(
+            #         start_bottom[0] + self.thickness, start_bottom[1], 
+            #         end_bottom[0], end_bottom[1], 
+            #         fill=self.color, outline="blue"
+            #     )
 
 
     def check_walls(self) -> None:
@@ -108,7 +108,21 @@ class Wall:
                     ]
                 )
 
+                thickened_walls.append(
+                    [
+                        (start[0] - half_thickness, start[1] - half_thickness), (start[0] - half_thickness, start[1] + half_thickness),
+                        (end[0] + half_thickness, end[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                    ]
+                )
+
             elif vertical_wall:
+                thickened_walls.append(
+                    [
+                        (start[0] - half_thickness, start[1] - half_thickness), (start[0] + half_thickness, start[1] - half_thickness),
+                        (end[0] - half_thickness, end[1] + half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                    ]
+                )
+
                 thickened_walls.append(
                     [
                         # * Top Side
@@ -117,8 +131,7 @@ class Wall:
                         (start[0] + half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
                     ]
                 )
-            
-        
+
         self.wall_coordinates_segments = thickened_walls
 
 if __name__ == "__main__":

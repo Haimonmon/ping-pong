@@ -44,6 +44,8 @@ class Ball:
         self.ball_dx = 0
         self.ball_dy = 0
 
+        self.radius = self.size / 2
+
         # * Locking of thread to avoid critical sections of live performance of task
         self.lock = threading.Lock()
         
@@ -85,6 +87,7 @@ class CollisionHandler:
             with self.ball.lock:
                 coordinates: list = self.playground.platform.coords(self.ball.ball)
 
+                # * Ball Direction
                 ball_left = coordinates[0]
                 ball_top = coordinates[1]
                 ball_right = coordinates[2]
@@ -93,41 +96,31 @@ class CollisionHandler:
                 for wall in self.playground.wall.coordinates:
                     bottom_side: Tuple = wall[0], wall[1]  
                     top_side: Tuple = wall[2], wall[3]
-                    corner_left: Tuple = wall[2], [4]
                     
                     horizontal_wall =  bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
                     vertical_wall = bottom_side[0][0] == bottom_side[1][0] or top_side[0][0] == top_side[1][0]
-
+        
                     # * Check for horizontal wall collision
                     if horizontal_wall:
+                        if bottom_side[0][0] <= ball_left and bottom_side[1][0] >= ball_right and (ball_top <= bottom_side[0][1] <= ball_bottom):
+                            if self.ball.ball_dy > 0:
+                                self.ball.physics.reverse_y_direction()
 
-                        if bottom_side[0][0] <= ball_right and bottom_side[1][0] >= ball_left and ball_top <= bottom_side[0][1] <= ball_bottom:
-                            self.ball.physics.reverse_y_direction()
-                            break
-
-                        if bottom_side[0][0] <= ball_right and bottom_side[1][0] >= ball_left and ball_top <= top_side[0][1] <= ball_bottom:
-                            self.ball.physics.reverse_y_direction()
-                            break
+                        if bottom_side[0][0] <= ball_left and bottom_side[1][0] >= ball_right and (ball_top <= top_side[0][1] <= ball_bottom):
+                            if self.ball.ball_dy < 0:
+                                self.ball.physics.reverse_y_direction()
 
                     # * Check for vertical wall collision
                     if vertical_wall:
-                        if (ball_left <= bottom_side[0][0] <= ball_right) and bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top:
-                            # 172.0 192.0
-                            print(bottom_side)
-                            self.ball.physics.reverse_x_direction()
-                            break
+                        if (bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top and ball_left <= bottom_side[0][0] <= ball_right ):
+                            if self.ball.ball_dx > 0:
+                                self.ball.physics.reverse_x_direction()
 
-                        if (ball_left <= top_side[0][0] <= ball_right) and bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top:
-                            self.ball.physics.reverse_x_direction()
-                            break
+                        if  bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top and (ball_left <= top_side[0][0] <= ball_right):
 
-                        if bottom_side[0][0] <= ball_right and bottom_side[1][0] >= ball_left and ball_top <= top_side[0][1] <= ball_bottom:
-                            self.ball.physics.reverse_y_direction()
-                            break
+                            if self.ball.ball_dx < 0:
+                                self.ball.physics.reverse_x_direction()
 
-
-
-                
                     out_of_bounds: bool = (
                             ball_left < -10 or
                             ball_right > self.playground.platform_dimension['width'] + 10 or
@@ -138,16 +131,6 @@ class CollisionHandler:
                     if out_of_bounds:
                         self.ball.physics.reset_direction()
                  
-            # if top_collision or bottom_collision:
-            #     self.ball.physics.reverse_y_direction()
-
-            # if left_wall_collision or right_wall_collision:
-            #    self.ball.physics.reverse_x_direction()
-       
-            # if out_of_bounds:
-            #     self.ball.physics.reset_direction()
-
-
 class PhysicsHandler:
     """
     Calculates trajectories 🤓☝️
@@ -156,6 +139,8 @@ class PhysicsHandler:
         self.ball = ball
         self.collision = ball.collision
         self.playground = ball.playground
+
+        self.run = True
 
 
     def ball_movement(self) -> None:
@@ -171,6 +156,7 @@ class PhysicsHandler:
         """
         Enable ball movements
         """
+        
         with self.ball.lock:
             self.playground.platform.move(self.ball.ball, self.ball.ball_dx, self.ball.ball_dy)
 
@@ -190,6 +176,8 @@ class PhysicsHandler:
         directions: list = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]
         self.ball.ball_dx = random.choice(directions)
         self.ball.ball_dy = random.choice(directions)
+        # self.ball.ball_dx = -4
+        # self.ball.ball_dy = 2
 
         # * Pythagoream theorem
         magnitude = math.sqrt(self.ball.ball_dx**2 + self.ball.ball_dy**2)
@@ -232,9 +220,6 @@ if __name__ == "__main__":
     ball.test_run()
 
     # TODO: 
-    # ! Fix Wall collision logic and suit it on the given wall coordinates
     # ! Add paddle collision logic
-    # ! Seperate Collision logic for Single Responsibility
-    # ! Critical Section Fix, Collision of wall and paddles
 
     
