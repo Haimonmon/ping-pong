@@ -27,7 +27,10 @@ class Ball:
         self.playground = playground
         
         # * Wall Coordinates
-        self.wall = self.playground.wall.coordinates
+        if self.playground.wall:
+            self.wall = self.playground.wall.coordinates
+        else:
+            self.wall = None
 
         # * Starting position at the center ;)
         self.ball_x_pos = self.playground.platform_dimension['width'] // 2
@@ -160,7 +163,8 @@ class PhysicsHandler:
         with self.ball.lock:
             self.playground.platform.move(self.ball.ball, self.ball.ball_dx, self.ball.ball_dy)
 
-        self.collision.check_boundaries()
+        if self.ball.wall:
+            self.collision.check_boundaries()
 
 
     def fix_ball_speed(self, recursion_attempt: int = 0) -> None:
