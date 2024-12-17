@@ -2,7 +2,7 @@ import time
 import threading
 import tkinter as tk
 
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 
 class InvalidPaddleCoordinates(Exception):
@@ -127,6 +127,40 @@ class Paddle:
                 ]
             ]
 
+    @property
+    def corner_midpoint(self) -> Dict[str, List[Tuple[int, int]]]:
+        """
+        Gets paddle midpoint
+        """
+
+        if self.position[2] == 'vertical':
+            # * Upper or top of the vertical paddle
+            (x1, y1), (x2, y2) = self.coordinates[1][2], self.coordinates[1][3]
+
+            # * Lower or bottom of the vertical paddle
+            (x3, y3), (x4, y4) = self.coordinates[1][0], self.coordinates[1][1]
+
+            right_segment = self.get_midpoint(x1, y1, x2, y2)
+
+            left_segment = self.get_midpoint(x3, y3, x4, y4)
+
+            return {
+                'right_segment': right_segment,
+                'left_segment': left_segment
+            }
+
+        if self.position[2] == 'horizontal':
+            pass
+    
+    def get_midpoint(self, x1, y1, x2, y2) -> List[Tuple[int, int]]:
+        midpoint_x = (x1 + x2) / 2
+
+        first_half = [(x1, y1), (midpoint_x, y1)]
+        second_half = [(midpoint_x, y2), (x2, y2)]
+
+        return [first_half, second_half]
+
+
     def display_movements(self) -> None:
         pass
 
@@ -142,106 +176,75 @@ class PaddleMovementHandler:
         self.paddle = paddle
 
         self.paddle_alignment = self.paddle.position[2]
-
         
         self.wall_coordinates = self.paddle.platform_wall.coordinates
-        self.wall_in_direction = []
-
-        # * Paddle wall in direction
-        self.wall_in_paddle_direction()
-
         
-
+  
     def move(self):
+        """
+        Start movement of Paddle
+        """
         while True:
             self.continue_move()
             time.sleep(0.05)
 
+
     def continue_move(self) -> None:
         print(self.wall_coordinates)
 
+
     def change_move(self):
         pass
-
-    def wall_in_paddle_direction(self) -> None:
-        """
-        Detects obstacle that in paddles movemen depends on its alignment
-        """
-
-        range = 10
-
-
-        if self.paddle_alignment == 'vertical':
-            paddle_left_pos = (self.paddle.coordinates[1][0], self.paddle.coordinates[1][1])
-            paddle_right_pos = (self.paddle.coordinates[1][2], self.paddle.coordinates[1][3])
-
-            for wall in self.wall_coordinates:
-                bottom_side: Tuple = wall[0], wall[1]  
-                top_side: Tuple = wall[2], wall[3]
-                
-                horizontal_wall = bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
-
-                if horizontal_wall:
-                    find = False
-                    up = 0
-                    down = 0
-                    while not find:
-                        # print(paddle_right_pos[0][1] + up)
-                        left_up = (
-                            paddle_right_pos[0][0] <= top_side[1][0] and
-                            top_side[0][0] <= paddle_right_pos[1][0] and
-                            paddle_right_pos[0][1] + up == top_side[0][1]
-                        )
-
-                        # right_collision = (
-                        #     top_side[1][1] >= (paddle_right_pos[1][1] - down) >= bottom_side[0][1]
-                        #     and paddle_right_pos[0][0] == bottom_side[0][0]
-                        # )
-                        
-                        # print(f'{paddle_right_pos[0][1] + up} == {top_side[0][1]}',left_up)
-
-                        if left_up:
-                            print()
-                            print(f'{paddle_right_pos[0][0]} >= {top_side[1][0]} and \n{top_side[0][0]} <= { paddle_right_pos[1][0]} and \n{paddle_right_pos[0][1] + up} == {top_side[0][1]}')
-                            print(top_side)
-                            print()
-                            self.wall_in_direction.append(wall)
-                            find = True
-                            break
-
-                        if paddle_left_pos[0][1] + up <= 0:
-                            find = False
-                            break
-
-                        up -=1
-                        down +=1
-
-
-        
-
-        if self.paddle_alignment == 'horizontal':
-            pass
-        
-        print()
-        print('finded wall in collision:', self.wall_in_direction)
+        print("Walls in paddle's direction:", self.wall_in_direction)
 
 
 class PaddleCollisionHandler:
     def __init__(self, paddle: Paddle):
         self.paddle = paddle
 
+        self.paddle_segments = self.paddle.corner_midpoint
+
+        self.wall_in_direction = []
+
+        self.wall_in_paddle_direction()
+
+
     def check_obstacle(self):
         pass
 
-    def check_ball_collision(self):
-        pass
 
+    def check_partial_collision(self, paddle_segments: List[Tuple[int, int]], wall: List[Tuple[int, int]]):
+        """
+        Detects obstacle that in paddles movemen depends on its alignment
+        """
+        for segment in paddle_segments:
+            (seg_x1, seg_y1), (seg_x2, seg_y2) = segment
+
+            wall_x1, wall_y1, wall_x2, wall_y2 = wall
+            
+            # print(f'max(0, min({seg_x2}, {wall_x2}) + max({seg_x1}, {wall_x1}))')
+            overlap = max(0, min(seg_x2, wall_x2) - max(seg_x1, wall_x1))
+            # print('lapping: ', overlap)
+
+            if seg_x1 == wall_x2 or seg_x2 == wall_x1:
+                overlap = max(1, overlap)
+
+            if overlap > 0 and seg_y1 >= wall_y1:
+                # print(f"Collision Onn segment: {segment}")
+                return True
+
+        # print('bruh no collision')
+        return False
+
+    def wall_in_paddle_direction(self) -> None:
+        
+        for wall in self.paddle.playground.wall.coordinates:
+            print(wall)
 
 if __name__ == "__main__":
       paddle = Paddle()
       paddle.test_run()
 
       # TODO:
-      # ! Add paddle render
       # ! Add paddle control customization , this can help for seperate player paddle key handlings
-      # ! Add locking and threading
+      # ! Add locking
