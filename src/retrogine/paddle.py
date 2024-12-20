@@ -1,4 +1,5 @@
 import time
+import random
 import threading
 import tkinter as tk
 
@@ -28,11 +29,11 @@ class Paddle:
         # * Starting position of the paddle 🏓
         self.position = position
 
-        # * Added for customize paddle movement keys ⬆️
-        self.keys = keys
-        
         # * Controlled by ?
         self.controlled = controlled
+
+        # * Paddle locking 🏓🔒
+        self.lock = threading.Lock()
 
         # * Paddle margin between platform width and height
         self.range_margin = 10
@@ -50,17 +51,22 @@ class Paddle:
         # * Wall 🧱
         self.platform_wall = self.playground.wall
 
+        # * Added for customize paddle movement keys ⬆️
+        self.keys = f'{keys[0].lower()}{keys[1].lower()}'
+
         self.check_paddle()
 
         self.collision = PaddleCollisionHandler(self)
         self.movement = PaddleMovementHandler(self)
 
+        self.rendered_lines = []
+
         self.render()
 
         # * Parallel Threading for movements in a seperate thread
-        # self.thread = threading.Thread(target=self.movement.move)
-        # self.thread.daemon = True
-        # self.thread.start()
+        self.thread = threading.Thread(target=self.movement.paddle_movement)
+        self.thread.daemon = True
+        self.thread.start()
 
        
 
@@ -69,9 +75,12 @@ class Paddle:
         Render paddle 2d moddel
         """
         for start_bottom, end_bottom, start_top, end_top in self.coordinates:
-            self.platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='yellow')
-            self.platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='yellow')
+            bottom_line: tk.Canvas = self.platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='yellow')
+            top_line: tk.Canvas = self.platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='yellow')
 
+            # * Can be used for later movements of paddle
+            self.rendered_lines.append(bottom_line)
+            self.rendered_lines.append(top_line)
 
     def check_paddle(self):
         """
@@ -105,6 +114,8 @@ class Paddle:
             raise InvalidPaddleCoordinates(
                 f"Position must be a tuple of 3 elements: (x, y, alignment). Got: {self.position}"
             )
+        
+        
         x, y, alignment = self.position
 
         half_width = self.width / 2
@@ -136,6 +147,7 @@ class Paddle:
         if self.position[2] == 'vertical':
             # * Upper or top of the vertical paddle
             (x1, y1), (x2, y2) = self.coordinates[1][2], self.coordinates[1][3]
+
 
             # * Lower or bottom of the vertical paddle
             (x3, y3), (x4, y4) = self.coordinates[1][0], self.coordinates[1][1]
@@ -178,24 +190,90 @@ class PaddleMovementHandler:
         self.paddle_alignment = self.paddle.position[2]
         
         self.wall_coordinates = self.paddle.platform_wall.coordinates
-        
+
+        self.paddle_direction = self.paddle.keys[random.choice([0,1])]
+
+        self.paddle.playground.window.bind(self.paddle.keys[0], self.change_direction)
+        self.paddle.playground.window.bind(self.paddle.keys[1], self.change_direction)
+
+        self.run = True
+
   
-    def move(self):
+    def paddle_movement(self):
         """
         Start movement of Paddle
         """
-        while True:
+        while self.run:
             self.continue_move()
-            time.sleep(0.05)
+            time.sleep(0.01)
 
 
     def continue_move(self) -> None:
-        print(self.wall_coordinates)
+        """
+        Movements for the paddle will be apply base on the position direction both of its side
+        """
+        is_paddle_horizontal = self.paddle.position[2] == 'horizontal'
+        is_paddle_vertical = self.paddle.position[2] == 'vertical'
 
 
-    def change_move(self):
-        pass
-        print("Walls in paddle's direction:", self.wall_in_direction)
+        if is_paddle_vertical:
+            self.move_vertical()
+
+        if is_paddle_horizontal:
+            pass
+
+
+    def change_direction(self, event):
+        """
+        Change the paddle's movement direction based on given or customized keypress 🚥
+        """
+
+        if event.keysym.lower() == self.paddle.keys[0].lower():  
+            self.paddle_direction = self.paddle.keys[0]
+
+        
+        elif event.keysym.lower() == self.paddle.keys[1].lower():  
+            self.paddle_direction = self.paddle.keys[1]
+
+
+
+    def move_vertical(self) -> None:
+        """
+        Goes ⬆️ Ups and Downs ⬇️
+        """
+
+        with self.paddle.lock:
+            x, y, alignment = self.paddle.position
+
+            side1_stop_range = self.paddle.collision.side1_stop_range
+            side2_stop_range = self.paddle.collision.side2_stop_range
+
+            if self.paddle.controlled == 'player' and self.paddle_direction == self.paddle.keys[0]:
+                if y > side1_stop_range[2]:
+                    y -= 2.5
+                else:
+                    y = side1_stop_range[2]
+                
+            if self.paddle.controlled == 'player' and self.paddle_direction == self.paddle.keys[1]:
+                if y < side2_stop_range[2]:
+                    y += 2.5
+                else:
+                    y = side2_stop_range[2]
+                
+            self.update_paddle(x, y, alignment, y - self.paddle.position[1])
+
+    
+    def update_paddle(self, x: float, y: float, alignment: str, dy: float) -> None:
+        """
+        Update paddle coordinates
+        """
+        for line in self.paddle.rendered_lines:
+            self.paddle.platform.move(line, 0, dy)
+
+        self.paddle.position = (x, y, alignment)
+
+        self.paddle.polish_paddle()  # * This will update the coordinates after movement occur 
+
 
 
 class PaddleCollisionHandler:
@@ -206,40 +284,85 @@ class PaddleCollisionHandler:
 
         self.wall_in_direction = []
 
+        self.side1_stop_range = None
+
+        self.side2_stop_range = None
+
         self.wall_in_paddle_direction()
 
 
     def check_obstacle(self):
         pass
 
-
-    def check_partial_collision(self, paddle_segments: List[Tuple[int, int]], wall: List[Tuple[int, int]]):
+    def vertical_partial_collision(self, paddle_segments: List[Tuple[int, int]], wall1: List[Tuple[int, int]], wall2: List[Tuple[int, int]], direction: str):
         """
         Detects obstacle that in paddles movemen depends on its alignment
         """
+        gap = 2
+
+        # print(direction)
+      
         for segment in paddle_segments:
             (seg_x1, seg_y1), (seg_x2, seg_y2) = segment
 
-            wall_x1, wall_y1, wall_x2, wall_y2 = wall
+            wall1_x1, wall1_y1 = wall1[0]
+            wall1_x2, wall1_y2 = wall1[1]
             
-            # print(f'max(0, min({seg_x2}, {wall_x2}) + max({seg_x1}, {wall_x1}))')
-            overlap = max(0, min(seg_x2, wall_x2) - max(seg_x1, wall_x1))
-            # print('lapping: ', overlap)
+            overlap = max(0, min(seg_x2, wall1_x2) - max(seg_x1 - gap, wall1_x1))
 
-            if seg_x1 == wall_x2 or seg_x2 == wall_x1:
+            if seg_x1 - gap == wall1_x2 or seg_x2 == wall1_x1:
                 overlap = max(1, overlap)
 
-            if overlap > 0 and seg_y1 >= wall_y1:
-                # print(f"Collision Onn segment: {segment}")
-                return True
-
-        # print('bruh no collision')
-        return False
+            
+            if direction == 'top':
+                # * Upper part of the vertical paddle
+                if overlap > 0 and (seg_y1 >= wall1_y1 or wall2[0][1] <= seg_y1 <= wall1_y1):
+                    if wall2[0][1] <= seg_y1 <= wall1_y1:
+                        self.side1_stop_range: Tuple = (seg_x1, seg_x2, (seg_y2) + (self.paddle.width // 2))
+                        return
+                    
+                    if self.side1_stop_range is None or seg_y1 >= self.side1_stop_range[2]:
+                        self.side1_stop_range: Tuple = (seg_x1, seg_x2, (wall1_y1 + 10) + (self.paddle.width // 2))
+                        return
+                    
+                   
+            if direction == 'down':
+                # * Lower part of the vertical paddle
+                if overlap > 0 and (seg_y1 <= wall1_y1 or wall2[0][1] >= seg_y1 >= wall1_y1):
+                    
+                    if wall2[0][1] >= seg_y1 >= wall1_y1:
+                        self.side2_stop_range: Tuple = (seg_x1, seg_x2, (seg_y2) - (self.paddle.width // 2))
+                        return
+                    
+                    if self.side2_stop_range is None or seg_y1 <= self.side2_stop_range[2]:
+                        self.side2_stop_range: Tuple = (seg_x1, seg_x2, (wall1_y1 - 10) - (self.paddle.width // 2))
+                        return
+        
 
     def wall_in_paddle_direction(self) -> None:
-        
-        for wall in self.paddle.playground.wall.coordinates:
-            print(wall)
+        with self.paddle.lock:
+            for wall in self.paddle.playground.wall.coordinates:
+                bottom_side: Tuple = wall[0], wall[1]  
+                top_side: Tuple = wall[2], wall[3]
+
+                # horizontal_wall =  bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
+                # vertical_wall = bottom_side[0][0] == bottom_side[1][0] or top_side[0][0] == top_side[1][0]
+
+                is_paddle_horizontal = self.paddle.position[2] == 'horizontal'
+                is_paddle_vertical = self.paddle.position[2] == 'vertical'
+
+                if is_paddle_vertical:
+                    wall1 = (bottom_side[1], top_side[1])
+                    wall2 = (bottom_side[0], top_side[0])
+                    self.vertical_partial_collision(self.paddle_segments['right_segment'], wall1, wall2, 'top')
+                    self.vertical_partial_collision(self.paddle_segments['left_segment'], wall2, wall1, 'down')
+
+                if is_paddle_horizontal:
+                    pass
+                
+
+        print('Side 1 Stop: ', self.side1_stop_range)
+        print('Side 2 Stop: ', self.side2_stop_range)
 
 if __name__ == "__main__":
       paddle = Paddle()
@@ -248,3 +371,4 @@ if __name__ == "__main__":
       # TODO:
       # ! Add paddle control customization , this can help for seperate player paddle key handlings
       # ! Add locking
+      # ! Add Paddle Horizontal Collision on wall direction logic
