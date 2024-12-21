@@ -16,12 +16,15 @@ class Wall:
     """
     def __init__(self, wall_coordinates_segments: List, playground: object, color: str = "white"):
         self.wall_coordinates_segments = wall_coordinates_segments
-        self.thickness = playground.wall_thickness
+
+        self.playground = playground
+
+        self.thickness = self.playground.wall_thickness
         self.color = color
 
-        self.__platform = playground.platform
-        self.__platform_width = playground.platform_dimension['width']
-        self.__platform_height = playground.platform_dimension['height']
+        self.__platform = self.playground.platform
+        self.__platform_width = self.playground.platform_dimension['width']
+        self.__platform_height = self.playground.platform_dimension['height']
 
         self.check_walls()
         self.apply_thickness()
@@ -43,6 +46,8 @@ class Wall:
 
             horizontal_wall = start_bottom[1] == end_bottom[1]
             vertical_wall = start_bottom[0] == end_bottom[0]
+
+
 
             # if horizontal_wall:
             #     self.__platform.create_rectangle(
@@ -93,7 +98,11 @@ class Wall:
 
         thickened_walls = []
 
-        half_thickness = self.thickness / 2
+        half_thickness = (self.thickness / 2)
+
+        padding = self.playground.platform_padding
+
+        print(padding)
 
         for start, end in self.wall_coordinates_segments:
 
@@ -103,32 +112,32 @@ class Wall:
             if horizontal_wall:
                 thickened_walls.append(
                     [
-                        (start[0] - half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] - half_thickness),
-                        (start[0] - half_thickness, start[1] + half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                        ((start[0] - half_thickness) + padding, (start[1] - half_thickness) + padding), ((end[0] + half_thickness) + padding, (end[1] - half_thickness) + padding),
+                        ((start[0] - half_thickness) + padding, (start[1] + half_thickness) + padding), ((end[0] + half_thickness) + padding, (end[1] + half_thickness) + padding)
                     ]
                 )
 
                 thickened_walls.append(
                     [
-                        (start[0] - half_thickness, start[1] - half_thickness), (start[0] - half_thickness, start[1] + half_thickness),
-                        (end[0] + half_thickness, end[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                        ((start[0] - half_thickness) + padding, (start[1] - half_thickness) + padding), ((start[0] - half_thickness) + padding, (start[1] + half_thickness) + padding),
+                        ((end[0] + half_thickness) + padding, (end[1] - half_thickness) + padding), ((end[0] + half_thickness) + padding, (end[1] + half_thickness) + padding)
                     ]
                 )
 
             elif vertical_wall:
                 thickened_walls.append(
                     [
-                        (start[0] - half_thickness, start[1] - half_thickness), (start[0] + half_thickness, start[1] - half_thickness),
-                        (end[0] - half_thickness, end[1] + half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                        ((start[0] - half_thickness) + padding, (start[1] - half_thickness) + padding), ((start[0] + half_thickness) + padding, (start[1] - half_thickness) + padding),
+                        ((end[0] - half_thickness) + padding, (end[1] + half_thickness) + padding), ((end[0] + half_thickness) + padding, (end[1] + half_thickness) + padding)
                     ]
                 )
 
                 thickened_walls.append(
                     [
                         # * Top Side
-                        (start[0] - half_thickness, start[1] - half_thickness), (end[0] - half_thickness, end[1] + half_thickness),
+                        ((start[0] - half_thickness) + padding, (start[1] - half_thickness) + padding), ((end[0] - half_thickness) + padding, (end[1] + half_thickness) + padding),
                         # * Bottom Side
-                        (start[0] + half_thickness, start[1] - half_thickness), (end[0] + half_thickness, end[1] + half_thickness)
+                        ((start[0] + half_thickness) + padding, (start[1] - half_thickness) + padding), ((end[0] + half_thickness) + padding, (end[1] + half_thickness) + padding)
                     ]
                 )
 
