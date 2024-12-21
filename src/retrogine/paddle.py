@@ -74,6 +74,7 @@ class Paddle:
         """
         Render paddle 2d moddel
         """
+       
         for start_bottom, end_bottom, start_top, end_top in self.coordinates:
             bottom_line: tk.Canvas = self.platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='yellow')
             top_line: tk.Canvas = self.platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='yellow')
@@ -114,7 +115,6 @@ class Paddle:
             raise InvalidPaddleCoordinates(
                 f"Position must be a tuple of 3 elements: (x, y, alignment). Got: {self.position}"
             )
-        
         
         x, y, alignment = self.position
 
@@ -260,19 +260,20 @@ class PaddleMovementHandler:
                 else:
                     y = side2_stop_range[2]
                 
-            self.update_paddle(x, y, alignment, y - self.paddle.position[1])
+        self.update_paddle(x, y, alignment, y - self.paddle.position[1])
 
     
     def update_paddle(self, x: float, y: float, alignment: str, dy: float) -> None:
         """
         Update paddle coordinates
         """
-        for line in self.paddle.rendered_lines:
-            self.paddle.platform.move(line, 0, dy)
+        with self.paddle.lock:
+            for line in self.paddle.rendered_lines:
+                self.paddle.platform.move(line, 0, dy)
 
-        self.paddle.position = (x, y, alignment)
+            self.paddle.position = (x, y, alignment)
 
-        self.paddle.polish_paddle()  # * This will update the coordinates after movement occur 
+            self.paddle.polish_paddle()  # * This will update the coordinates after movement occur 
 
 
 
