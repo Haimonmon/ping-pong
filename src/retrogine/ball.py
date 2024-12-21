@@ -1,5 +1,6 @@
 import time
 import math
+import yappi
 import random
 import threading
 import tkinter as tk
@@ -55,6 +56,9 @@ class Ball:
         # * display ping pong ball
         self.ball = self.render()
 
+        # ? Allow Thread to Run
+        self.run = True
+
         # * Helper classes
         self.collision = CollisionHandler(self)
         self.physics = PhysicsHandler(self)
@@ -62,16 +66,22 @@ class Ball:
         # * Sets the speed trajectory once the round starts
         self.physics.fix_ball_speed()
 
+        yappi.start()
+
         # * Parallel Threading for movements in a seperate thread
         self.thread = threading.Thread(target=self.physics.ball_movement)
         self.thread.daemon = True
         self.thread.start()
-    
 
+    
     def render(self) -> int:
         return self.playground.platform.create_oval(self.ball_x_pos - self.size, self.ball_y_pos - self.size, self.ball_x_pos + self.size, self.ball_y_pos + self.size, fill = self.color)
+    
+    def stop(self) -> None:
+        self.run = False
+        self.thread.join()
 
-   
+
 class CollisionHandler:
     """
     Does it hit?? 🧨💥
@@ -100,39 +110,59 @@ class CollisionHandler:
                     bottom_side: Tuple = wall[0], wall[1]  
                     top_side: Tuple = wall[2], wall[3]
                     
-                    horizontal_wall =  bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
-                    vertical_wall = bottom_side[0][0] == bottom_side[1][0] or top_side[0][0] == top_side[1][0]
+                    horizontal_wall: bool = bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
+                    
+                    vertical_wall: bool = bottom_side[0][0] == bottom_side[1][0] or top_side[0][0] == top_side[1][0]
         
                     # * Check for horizontal wall collision
                     if horizontal_wall:
-                        if bottom_side[0][0] <= ball_left and bottom_side[1][0] >= ball_right and (ball_top <= bottom_side[0][1] <= ball_bottom):
-                            if self.ball.ball_dy > 0:
-                                self.ball.physics.reverse_y_direction()
-
-                        if bottom_side[0][0] <= ball_left and bottom_side[1][0] >= ball_right and (ball_top <= top_side[0][1] <= ball_bottom):
-                            if self.ball.ball_dy < 0:
-                                self.ball.physics.reverse_y_direction()
+                        self.check_horizontal_collision(bottom_side, top_side, ball_left, ball_right, ball_top, ball_bottom)
+                        
 
                     # * Check for vertical wall collision
                     if vertical_wall:
-                        if (bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top and ball_left <= bottom_side[0][0] <= ball_right ):
-                            if self.ball.ball_dx > 0:
-                                self.ball.physics.reverse_x_direction()
+                        self.check_vertical_collision(bottom_side, top_side, ball_left, ball_right, ball_top, ball_bottom)
 
-                        if  bottom_side[0][1] <= ball_bottom and bottom_side[1][1] >= ball_top and (ball_left <= top_side[0][0] <= ball_right):
-
-                            if self.ball.ball_dx < 0:
-                                self.ball.physics.reverse_x_direction()
-
+                    # ! Fix Out of bounds range
                     out_of_bounds: bool = (
-                            ball_left < -10 or
-                            ball_right > self.playground.platform_dimension['width'] + 10 or
-                            ball_top < -10 or
-                            ball_bottom > self.playground.platform_dimension['height'] + 10
+                            ball_left < -105 or
+                            ball_right > self.playground.platform_dimension['width'] + 105 or
+                            ball_top < -105 or
+                            ball_bottom > self.playground.platform_dimension['height'] + 105
                         )
         
                     if out_of_bounds:
                         self.ball.physics.reset_direction()
+    
+
+
+    def check_horizontal_collision(self, bottom_wall_side: Tuple, top_wall_side: Tuple, ball_left: float, ball_right: float, ball_top: float, ball_bottom: float) -> None:
+        """
+        Checks for ball horizontal wall collision 
+        """
+        if bottom_wall_side[0][0] <= ball_left and bottom_wall_side[1][0] >= ball_right and (ball_top <= bottom_wall_side[0][1] <= ball_bottom):
+            if self.ball.ball_dy > 0:
+                self.ball.physics.reverse_y_direction() # * Already Locked
+
+        if bottom_wall_side[0][0] <= ball_left and bottom_wall_side[1][0] >= ball_right and (ball_top <= top_wall_side[0][1] <= ball_bottom):
+            if self.ball.ball_dy < 0:
+                self.ball.physics.reverse_y_direction()  # * Already Locked
+
+
+
+    def check_vertical_collision(self, bottom_wall_side: Tuple, top_wall_side: Tuple, ball_left: float, ball_right: float, ball_top: float, ball_bottom: float) -> None:
+        """
+        Checks for ball vertical wall collision
+        """
+
+        if (bottom_wall_side[0][1] <= ball_bottom and bottom_wall_side[1][1] >= ball_top and ball_left <= bottom_wall_side[0][0] <= ball_right):
+            if self.ball.ball_dx > 0:
+                self.ball.physics.reverse_x_direction() # * Already Locked
+
+        if bottom_wall_side[0][1] <= ball_bottom and bottom_wall_side[1][1] >= ball_top and (ball_left <= top_wall_side[0][0] <= ball_right):
+            if self.ball.ball_dx < 0:
+                self.ball.physics.reverse_x_direction()  # * Already Locked
+
                  
 class PhysicsHandler:
     """
@@ -143,14 +173,12 @@ class PhysicsHandler:
         self.collision = ball.collision
         self.playground = ball.playground
 
-        self.run = True
-
 
     def ball_movement(self) -> None:
          """
          While loop will be on seperated looping task by the help of thread
          """
-         while True:
+         while self.ball.run:
             self.move_ball()
             time.sleep(0.01)
 
@@ -159,12 +187,15 @@ class PhysicsHandler:
         """
         Enable ball movements
         """
-        
+        yappi.start()
         with self.ball.lock:
+            
             self.playground.platform.move(self.ball.ball, self.ball.ball_dx, self.ball.ball_dy)
+            
 
         if self.ball.wall:
             self.collision.check_boundaries()
+        yappi.stop()
 
 
     def fix_ball_speed(self, recursion_attempt: int = 0) -> None:
@@ -172,26 +203,27 @@ class PhysicsHandler:
         Fixes the ball on its desired speed at any direction
         """
         # * Set default value to avoid recursion stacking :>
-        if recursion_attempt >= 4:
+        if recursion_attempt >= 2:
             self.ball.ball_dx = 2
             self.ball.ball_dy = -2
             return
-        
+            
         directions: list = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]
-        self.ball.ball_dx = random.choice(directions)
-        self.ball.ball_dy = random.choice(directions)
+        
+        ball_dx = random.choice(directions)
+        ball_dy = random.choice(directions)
         # self.ball.ball_dx = -4
         # self.ball.ball_dy = 2
 
-        # * Pythagoream theorem
-        magnitude = math.sqrt(self.ball.ball_dx**2 + self.ball.ball_dy**2)
+        magnitude = math.sqrt(ball_dx**2 + ball_dy**2)
         
         # ! To avoid dx, dy both 0 so it will not cause any errors for the divisions
-        if self.ball.ball_dx == 0 and self.ball.ball_dy == 0:
+        if ball_dx == 0 and ball_dy == 0:
             return self.fix_ball_speed(recursion_attempt + 1)
 
-        self.ball.ball_dx = int((self.ball.ball_dx / magnitude) * self.ball.speed)
-        self.ball.ball_dy = int((self.ball.ball_dy / magnitude) * self.ball.speed)
+    
+        self.ball.ball_dx = int((ball_dx / magnitude) * self.ball.speed)
+        self.ball.ball_dy = int((ball_dy / magnitude) * self.ball.speed)
 
         # ! Ensures the ball will not be in perfect vertical trajectory
         if self.ball.ball_dx == 0:
@@ -210,7 +242,15 @@ class PhysicsHandler:
         """
         Resets ball Position in order to reset the round and replay it and have fun again :)
         """
-        self.playground.platform.coords(self.ball.ball, self.ball.ball_x_pos - self.ball.size, self.ball.ball_y_pos - self.ball.size, self.ball.ball_x_pos + self.ball.size, self.ball.ball_y_pos + self.ball.size)
+        
+        self.playground.platform.coords(
+            self.ball.ball, 
+            self.ball.ball_x_pos - self.ball.size, 
+            self.ball.ball_y_pos - self.ball.size, 
+            self.ball.ball_x_pos + self.ball.size, 
+            self.ball.ball_y_pos + self.ball.size
+        )
+
         self.fix_ball_speed()
 
 
