@@ -5,36 +5,46 @@ import tkinter as tk
 from .ball import Ball
 from .wall import Wall
 from .paddle import Paddle
+from .platform import Platform
 
 from typing import List, Tuple
 
-
+# 0D0D0D
 class PlayGround:
      """
      Players playground or court 🏓
      """
-     def __init__(self, platform_width: int = 500, platform_height: int = 600, color: str = "#0D0D0D", window_title: str = "PongClassic", wall_thickness: int = 20) -> None:
+     def __init__(self, width: int, height: int, color: str = "black", window_title: str = "PongClassic", wall_thickness: int = 20) -> None:
           self.window = tk.Tk()
           self.window.title(window_title)
 
-          self.__platform_width = platform_width
-          self.__platform_height = platform_height
-          self.window.geometry(f"{self.__platform_width}x{self.__platform_height}")
+          # * Playground tkinter canvas
+          self.master = None
+
+          self.width = width
+          self.height = height 
+
+          self.window.geometry(f"{self.width}x{self.height}")
          
+          self.__platform_width = None
+          self.__platform_height = None
+
+          self.platform_padding = None
 
           # * Map states
           self.color = color
           self.window.configure(background = self.color)
           self.wall_thickness = wall_thickness
 
+          self.render()
+
           self.__platform = None
-          self.render() 
+          
 
           # * Walls 🧱
           self.__wall = None
 
           # * Default wall coordinates for now
-          
           # self.add_walls(
           #      [
           #           # * Top side Walls
@@ -66,8 +76,8 @@ class PlayGround:
           """
           Returns playground tkinter widget canvas used.
           """
-          return self.__platform
-    
+          return self.__platform.canvas
+     
 
      @property
      def wall(self) -> object:
@@ -95,7 +105,7 @@ class PlayGround:
 
      def add_walls(self, coordinates: List[List[Tuple[int,int]]], color: str = "white") -> None:
           """
-          Adds the platform Walls on the given playground
+          Adds Walls into the Platoform
 
           Example coordinates:
           ```python
@@ -120,27 +130,43 @@ class PlayGround:
 
      def add_pong_ball(self, color: str = "red", speed: float = 4, size: int = 10, num: int = 1) -> None:
           """
-          Adds pong ball on the PLayground
+          Adds pong ball into the PLatform
           """
-          self.balls = BallManager(self)
+          self.balls = BallManager(self) # * Lmao Balls .... wala nakong maisip na variable names :,D
           self.balls.add_ball(color, speed, size, num)
      
      
      def add_paddle(self, height: float, width: float,position: Tuple[int, int, str], keys: str, controlled: str) -> None:
           """
-          Adds paddle on the PLayground
+          Adds paddle into the Platform
+
+          [ ♻️ Note ]: Vertical paddle will be only available for now
           """
-          print('lmao', position)
           paddle = Paddle(self, position, keys, height, width, controlled)
           self.__paddles.append(paddle)
+
+     
+     def add_platform(self, width: int, height: int, color: str = 'black', padding: int = 100) -> None:
+          """
+          Adds the platform where the fun and game round happens 🎯
+          """
+
+          platform = Platform(self, width, height, padding, color)
+
+          self.__platform_width = width
+          self.__platform_height = height
+
+          self.platform_padding = platform.padding
+
+          self.__platform = platform
 
 
      def render(self) -> None:
           """
           Displays court designs
           """
-          self.__platform = tk.Canvas(self.window, width=self.__platform_width, height=self.__platform_height, background=self.color, highlightthickness=0, bd=0)
-          self.__platform.pack()
+          self.master = tk.Canvas(self.window, width=self.__platform_width, height=self.__platform_height, background=self.color, highlightthickness=0, bd=0)
+          self.master.pack(fill=tk.BOTH, expand=True)
 
 
      def unrender(self) -> None:
