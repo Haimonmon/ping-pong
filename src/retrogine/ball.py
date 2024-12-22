@@ -1,3 +1,4 @@
+import os
 import time
 import math
 import yappi
@@ -91,11 +92,37 @@ class CollisionHandler:
         self.playground = ball.playground
 
     
-    def check_paddle_boundaries(self) -> None:
-        pass
-    
+    def check_paddle_boundaries(self, paddles) -> None:
+        with self.ball.lock:
+            coordinates: list = self.playground.platform.coords(self.ball.ball)
 
-    def check_boundaries(self) -> None:
+            ball_left = coordinates[0]
+            ball_top = coordinates[1]
+            ball_right = coordinates[2]
+            ball_bottom = coordinates[3]
+
+            for paddle in paddles:
+                paddle_coordinates = paddle.coordinates
+
+                for wall in paddle_coordinates:
+                    bottom_side: Tuple = wall[0], wall[1]
+                    top_side: Tuple = wall[2], wall[3]
+
+                    horizontal_wall: bool = bottom_side[0][1] == bottom_side[1][1] or top_side[0][1] == top_side[1][1]
+
+                    vertical_wall: bool = bottom_side[0][0] == bottom_side[1][0] or top_side[0][0] == top_side[1][0]
+
+                    # * Check for horizontal wall collision
+                    if horizontal_wall:
+                        self.check_horizontal_collision(bottom_side, top_side, ball_left, ball_right, ball_top, ball_bottom)
+
+                    # * Check for vertical wall collision
+                    if vertical_wall:
+                        self.check_vertical_collision(bottom_side, top_side, ball_left, ball_right, ball_top, ball_bottom)
+    
+    
+    
+    def check_wall_boundaries(self) -> None:
             # * Reference [How to get the specific widget coordinates.]: https://stackoverflow.com/questions/50699664/change-coords-of-line-in-python-tkinter-canvas
             with self.ball.lock:
                 coordinates: list = self.playground.platform.coords(self.ball.ball)
@@ -173,6 +200,8 @@ class PhysicsHandler:
         self.collision = ball.collision
         self.playground = ball.playground
 
+        self.paddles = self.ball.playground.paddles
+
 
     def ball_movement(self) -> None:
          """
@@ -187,15 +216,18 @@ class PhysicsHandler:
         """
         Enable ball movements
         """
-        yappi.start()
+    
         with self.ball.lock:
             
             self.playground.platform.move(self.ball.ball, self.ball.ball_dx, self.ball.ball_dy)
             
 
+        if len(self.paddles) != 0:
+            self.collision.check_paddle_boundaries(self.paddles)
+
         if self.ball.wall:
-            self.collision.check_boundaries()
-        yappi.stop()
+            self.collision.check_wall_boundaries()
+
 
 
     def fix_ball_speed(self, recursion_attempt: int = 0) -> None:
