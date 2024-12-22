@@ -122,7 +122,7 @@ class Paddle:
         half_height = self.height / 2
 
         if alignment == 'vertical':
-            # * Rotated horizontal Coordinates
+            # * Rotated horizontal Coordinates: Rotate the horizontal wall on your imagination on counter clockwise hehe
             self.coordinates = [
                 [
                     # * Top side
@@ -131,10 +131,10 @@ class Paddle:
                     (x + half_height, y - half_width), (x + half_height, y + half_width)
                 ],
                 [
-                    # * Left side
-                    (x - half_height, y + half_width), (x + half_height, y + half_width),
                     # * Right side
-                    (x - half_height, y - half_width), (x + half_height, y - half_width)
+                    (x - half_height, y - half_width), (x + half_height, y - half_width),
+                    # * Left side
+                    (x - half_height, y + half_width), (x + half_height, y + half_width)
                 ]
             ]
 
@@ -291,9 +291,6 @@ class PaddleCollisionHandler:
 
         self.wall_in_paddle_direction()
 
-
-    def check_obstacle(self):
-        pass
 
     def vertical_partial_collision(self, paddle_segments: List[Tuple[int, int]], wall1: List[Tuple[int, int]], wall2: List[Tuple[int, int]], direction: str):
         """
