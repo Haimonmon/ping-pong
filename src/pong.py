@@ -12,8 +12,8 @@ class PongClassic:
         self.widget_list = [] # * Planning to change this way of single paging soon :)
 
         self.main_menu = ui.MainMenuUI(self)
-
-        self.window.run(func=self.main_menu.render(), window_width=1000,window_height=580, window_title="Pong Classic", resize_status=False)
+      
+        self.window.run(func=self.main_menu.render(), window_width=1000,window_height=580, window_title="Pong Classic ( Alpha )", resize_status=False)
 
 
     def quit(self) -> None:
