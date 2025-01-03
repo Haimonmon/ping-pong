@@ -1,0 +1,32 @@
+{
+    "user_interface": {
+        "current_theme": "default",
+        "themes": {
+            "default": {
+                "background": "#1D313C"
+            },
+            "cassanova": {}
+        }
+    },
+    "gameplay": {
+        "ball": {
+            "current_color": "#E86458",
+            "colors": []
+        },
+        "wall": {
+            "current_color": "#DE951F",
+            "colors": {}
+        },
+        "playground": {
+            "current_theme": "default",
+            "themes": {
+                "default": {
+                    "background": "#1D313C",
+                    "border": "#FADAC1",
+                    "text": "#FADAC1"
+                },
+                "cassanova": {}
+            }
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "selection": {
+        "up_selection": "W",
+        "down_selection": "S",
+        "left_selection": "A",
+        "right_selection": "D"
+    },
+    "gameplay_controls": {
+        "paddle1": {
+            "up_movement": "W",
+            "down_movement": "S"
+        },
+        "paddle2": {
+            "up_movement": "P",
+            "down_movement": "L"
+        }
+    }
+}

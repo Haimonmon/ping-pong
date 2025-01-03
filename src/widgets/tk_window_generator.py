@@ -42,6 +42,8 @@ class WindowGenerator:
     
     __instance = None
 
+    key_binds = {}
+
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super(WindowGenerator, cls).__new__(cls)
@@ -52,21 +54,25 @@ class WindowGenerator:
     # __root = tkr.Tk()
     # __root.title("Reused Tkinter OwO | Window") 
     
+
     @classmethod
     def widget_generator(cls) -> WidgetGenerator:
         """ Make an instance of it and ready to go """
-        return WidgetGenerator(cls.__instance.__root)
+        return WidgetGenerator(cls.__instance.__root, cls)
+
 
     @classmethod         
     def set_title(cls,title :str) -> None:
         """ Sets tkinter window title bar """
         cls.__instance.__root.title(title)
 
+
     @classmethod
     def set_size(cls,width:int, height:int) -> None:
         """ Sets the tkinter window size by customizing width and height. """
         cls.__instance.__root.geometry(f"{width}x{height}")
     
+
     @classmethod
     def set_resize(cls, status: bool) -> None:
         """ Sets the tkinter window status into resizable or unresizable."""
@@ -75,15 +81,18 @@ class WindowGenerator:
         else:
             cls.__instance.__root.resizable(False,False)
     
+
     @classmethod
     def set_window_cursor(cls, cursor_path: str) -> None:
         cls.__instance.__root["cursor"] = cursor_path
+
 
     @classmethod
     def set_maxsize(cls,width:int, height:int) -> None:
         """ Sets the tkinter window to its limited resizable size. """
         cls.__instance.__root.maxsize(width,height)
     
+
     @classmethod
     def set_background_color(cls,color: str) -> None:
         """ Sets the tkinter window background color. """
@@ -97,6 +106,7 @@ class WindowGenerator:
             icon = OpenImage(icon_path, image_width = 50, image_height = 50).open_image()
             cls.__instance.__root.iconphoto(True,icon)
 
+
     @classmethod
     def exit(cls, widget_list):
         """ It close the tkinter window to stop """
@@ -104,22 +114,44 @@ class WindowGenerator:
         cls.__instance.__root.quit()
         cls.__instance.__root.destroy()
 
+
     @classmethod
-    def clear_page(cls, group_widget_list) -> None:  
+    def clear_page(cls, group_widget_list: list) -> None:  
         """ 
         it helps prevent the creation of new windows by clearing the entire window page.
         """
-        for page in group_widget_list:
-            if isinstance(page, tk.Canvas):  # Adjust `tkw.Canvas` to match your canvas class
-                page.delete("all")  # Clears all items from the canvas
-            page.destroy()  # Destroy the widget#Destroy previous widgets to allow different layout on each p
-        group_widget_list.clear()
+        group_widget_list.reverse()
+
+        cls.key_binds.clear()
+
+        if isinstance(group_widget_list, list):
+            for page in group_widget_list:
+                if isinstance(page, tk.Canvas):
+                    page.delete("all")  # * Clears all items from the canvas
+                page.destroy() # * Destroy previous widgets to allow different layout on each pages
+            group_widget_list.clear()
+            return
+
+
+    @classmethod
+    def clear_canvas(cls, canvas: tk.Canvas) -> None:
+        """
+        Allow for reuse of canvas 
+        """
+        if not isinstance(canvas, tk.Canvas):
+            return
+        
+        cls.key_binds.clear()
+        
+        canvas.delete("all")
+
 
     @classmethod
     def run(cls,func: Callable = None, icon_path:str = None, cursor_path: str = None, window_width:int = 400, window_height:int = 200, window_title:str = None, resize_status:bool = None) -> None:
         """ It enables tkinter window to run """
         if func:
-            func() #This is for pages that needed to showup first when the application open
+            func() # * This is for pages that needed to showup first when the application open
+
         cls.__instance.set_resize(resize_status)
         cls.__instance.set_size(window_width,window_height)
         cls.__instance.set_title(window_title)
@@ -127,11 +159,13 @@ class WindowGenerator:
         cls.__instance.set_window_cursor(cursor_path)
         cls.__instance.__root.mainloop()
 
+
     @classmethod
     def root(cls):
         return cls.__instance.__root
 
+
 if __name__ == "__main__":
     pass
-    
+   
 
