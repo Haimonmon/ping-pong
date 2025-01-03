@@ -20,17 +20,18 @@ class MainMenuUI:
         """
         Display Main menu UI
         """
+        self.app_window.set_title('Pong Classic ( Alpha )')
         self.app_window.clear_page(self.app_widget_list)
 
         main_canvas = self.app_widget.create_canvas(width=1000, height=580, background="#1D313C", highlightthickness=0, pack={"fill": 'both', "expand": True})
+        self.app_widget_list.append(main_canvas)
 
         inner_canvas = self.app_widget.create_canvas(parent_widget=main_canvas, width=955, height=534, background="#1D313C", highlightthickness=2, bd=0, relief='solid', highlightbackground='#FADAC1', place={"relx": 0.5, "rely": 0.5, "anchor": "center"})
+        self.app_widget_list.append(inner_canvas)
 
         menu_option_canvas = self.app_widget.create_canvas(parent_widget=inner_canvas, width=325, height=264, background="#1D313C", highlightthickness=2, bd=0, relief='solid', highlightbackground='#FADAC1', place={"x": 325, "y": 243})
         self.app_widget_list.append(menu_option_canvas)
-        self.app_widget_list.append(inner_canvas)
-        self.app_widget_list.append(main_canvas)
-
+      
         self.app_widget.create_canvas_image(inner_canvas, 325, 60, orig_image=r"assets\Paddle_Wshadow.png", img_width=33, img_height=140)
         self.app_widget.create_canvas_image(inner_canvas, 380, 70, orig_image=r"assets\PongTxt_Wshadow.png", img_width=243, img_height=63)
         self.app_widget.create_canvas_image(inner_canvas, 380, 138, orig_image=r"assets\ClassicTxt_Wshadow.png", img_width=245, img_height=45)
