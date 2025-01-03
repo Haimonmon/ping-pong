@@ -1,6 +1,6 @@
 
 from .tk_helpers import GeometryManager , ImageFrames 
-from typing import Dict , Any, List
+from typing import Dict , Any, List, Callable
 from abc import ABC, abstractmethod
 from PIL import ImageTk , Image
 import tkinter as tk
@@ -164,6 +164,61 @@ class CanvasButtonText(CanvasWidget):
             self.__master_canvas.after(5,lambda: self.__master_canvas.move(button,0,3))
 
 
+class CanvasButton(CanvasWidget):
+    def __init__(self, master_canvas: tk.Canvas, text: str, width: int, height: int, x_coordinate: int, y_coordinate: int, command : Callable = None, background_color: str = 'gray', border_color = 'white', text_color: str = 'black') -> None:
+        self.__master_canvas = master_canvas
+        self.__text = text
+        self.__width = width
+        self.__height = height
+        self.__x_coordinate = x_coordinate
+        self.__y_coordinate = y_coordinate
+        self.__command = command
+        self.__background_color = background_color
+        self.__border_color = border_color
+        self.__text_color = text_color
+
+        self.button_id = None
+        self.text_id = None
+
+    def create(self):
+        self.button_id = self.__master_canvas.create_rectangle(
+            self.__x_coordinate, self.__y_coordinate, 
+            self.__x_coordinate + self.__width, 
+            self.__y_coordinate + self.__height, 
+            fill = self.__background_color, 
+            outline = self.__border_color,
+            width = 2
+        )
+        
+        self.text_id = self.__master_canvas.create_text(
+            self.__x_coordinate + self.__width // 2,
+            self.__y_coordinate + self.__height // 2,
+            text = self.__text,
+            fill = self.__text_color,
+            font=("Pixelify Sans", 14)
+        )
+
+        self.__master_canvas.tag_bind(self.button_id, "<Enter>", lambda event, button=self.button_id: self.button_enterhover(event, button))
+        self.__master_canvas.tag_bind(self.button_id, "<Leave>", lambda event, button=self.button_id: self.button_leavehover(event, button))
+
+        self.__master_canvas.tag_bind(self.text_id, "<Enter>", lambda event, button=self.text_id: self.button_enterhover(event, button))
+        self.__master_canvas.tag_bind(self.text_id, "<Leave>", lambda event, button=self.text_id: self.button_leavehover(event, button))
+
+        self.__master_canvas.tag_bind(self.button_id, "<Button-1>", self.on_click)
+        self.__master_canvas.tag_bind(self.text_id, "<Button-1>", self.on_click)
+
+    
+    def on_click(self, event) -> None:
+        if self.__command:
+            self.__command()
+
+    def button_enterhover(self, event, button) -> None:
+        event.widget["cursor"] = "@assets/Link.cur"
+
+    def button_leavehover(self, event, button) -> None:
+        event.widget["cursor"] = "@assets/Alternate.cur"
+        
+
 class CanvasBackgroundGIF(CanvasWidget):
     """ Initialize the tkinter Canvas Background GIF with a widget arguments.
 
@@ -257,9 +312,6 @@ class CanvasJustImage(CanvasWidget):
         self.__y_coordinate = y_coordinate
         self.__image_path = image_path
 
-        # self.__master_canvas.image_reference = image_path
-
-    
     def create(self) -> tk.Image:
         image = self.__master_canvas.create_image(self.__x_coordinate, self.__y_coordinate, anchor="nw", image=self.__image_path)
         return image
@@ -346,6 +398,11 @@ class AutomaticMouseSelector(CanvasWidget):
         self.__current_index = 0
 
 
+    @property
+    def get_button_navigations(self) -> None:
+        return self.__button_navigations
+
+
     def apply(self) -> None:
         if self.__hide_cursor:
             self.__master_canvas.config(cursor = "none")
@@ -370,13 +427,53 @@ class AutomaticMouseSelector(CanvasWidget):
         if key == self.__button_navigations[0] or key == self.__button_navigations[1]:
             self.__current_index = max(0, self.__current_index - 1) # * Move on the list of coordinates given on left indexing direction
         elif key == self.__button_navigations[2] or key == self.__button_navigations[3]:
-            self.__current_index = min(len(self.__coordinates) - 1, self.__current_index + 1)
+            self.__current_index = min(len(self.__coordinates) - 1, self.__current_index + 1)  # * Move on the list of coordinates given on right indexing direction
         
         x, y = self.__coordinates[self.__current_index]
 
         self.move_cursor_to_coordinates(x, y)
 
 
+class CanvasKeybindButton(CanvasWidget):
+    def __init__(self, master_canvas: tk.Canvas, x_coordinate: int, y_coordinate: int, image_path: tk.Image, width: int, height: int, text: str, gap = None, font = None, key_binds = None, key_bind_text: str = None):
+        self.__master_canvas = master_canvas
+        self.__x_coordinate = x_coordinate
+        self.__y_coordinate = y_coordinate
+        self.__image_path = image_path
+        self.__width = width
+        self.__height = height
+        self.__text = text
+        self.__gap = gap
+        self.__font = font
+        self.__key_bind = key_binds
+        self.__key_bind_text = key_bind_text
+
+
+    def create(self) -> None:
+        image = self.__master_canvas.create_image(self.__x_coordinate, self.__y_coordinate, image=self.__image_path)
+
+        key_bind_text = self.__master_canvas.create_text(self.__x_coordinate , self.__y_coordinate , text = self.__key_bind_text, font = self.__font, fill = '#FADAC1')
+
+        side_text = self.__master_canvas.create_text(self.__x_coordinate + self.__gap, self.__y_coordinate, text = self.__text, font = self.__font, fill = '#FADAC1')
+
+        self.apply()
+
+
+    def apply(self) -> None:
+        root = self.__master_canvas.winfo_toplevel()
+        root.bind_all("<Key>", self.handle_keypress)
+
+
+    def handle_keypress(self, event: tk.Event) -> None:        
+        key = event.keysym.upper()
+
+        if key in self.__key_bind:
+            command = self.__key_bind[key]
+            if command:
+                command()
+
+        
+        
 
 class CanvasButtonGIF(CanvasWidget):
     def button_gif(self,canvas: tk.Canvas, x: int, y:int ,gif_image: tk.Image): #Soon
