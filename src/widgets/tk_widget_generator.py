@@ -8,7 +8,7 @@ Provides an  organized reusable tkinter widgets
 from .canvas_widgets import *
 from .frame_widgets import *
 
-from typing import Dict , Any , List
+from typing import Dict , Any , List, Callable
 from .tk_helpers import OpenImage
 
 
@@ -21,10 +21,13 @@ class WidgetGenerator:
     A Factory Class that creates different tkinter widgets using Factory Design pattern.
     """
 
-    def __init__(self, root: tk.Tk) -> None: 
+    def __init__(self, root: tk.Tk, main) -> None: 
         self.__root = root
 
+        self.__main = main
+
         self.__photo_reference = []
+      
         
     def clear_page(self, group_widget_list: List) -> None:  #!Not Final: Implementing Command Design Pattern
         """ 
@@ -168,7 +171,7 @@ class WidgetGenerator:
         return image_popper
     
 
-    def apply_canvas_cursor_auto_move(self, canvas: tk.Canvas, movement_coordinates: List, navigations: str, cursor_hidden: bool = False) -> None:
+    def apply_canvas_cursor_auto_move(self, canvas: tk.Canvas, point_coordinates: List, navigations: str, cursor_hidden: bool = False) -> None:
         """
         Movement coordinates consist of a tuple with a pair element of x and y coordinates
 
@@ -181,8 +184,25 @@ class WidgetGenerator:
         if len(navigations) > 4:
             raise NavigationsReachedMaximum("I Only need 4 navs")
         
-        AutomaticMouseSelector(master_canvas = canvas, coordinates = movement_coordinates, button_navigations = navigations, hide_cursor = cursor_hidden).apply()
+        AutomaticMouseSelector(master_canvas = canvas, coordinates = point_coordinates, button_navigations = navigations, hide_cursor = cursor_hidden).apply()
 
+
+    def create_canvas_button(self,  master_canvas: tk.Canvas, text: str, width: int, height: int, x_coordinate: int, y_coordinate: int, command: Callable = None, background_color: str = 'gray', border_color='white', text_color: str = 'black') -> None:
+        """
+        Creates a canvas own button
+        """
+        CanvasButton(master_canvas, text, width, height, x_coordinate, y_coordinate, command, background_color, border_color, text_color).create()
+
+
+    def create_canvas_keybind_sign(self, master_canvas: tk.Canvas, key_bind: str, x_coordinate: int, y_coordinate: int, image_path: tk.Image, img_width: int, img_height: int, text: str, gap=None, font=None, command = None) -> None:
+        
+        image =  OpenImage(image_path, image_width = img_width, image_height=img_height).open_image()
+
+        self.__main.key_binds[key_bind] = command
+
+        key_bind_text = key_bind
+
+        CanvasKeybindButton(master_canvas, x_coordinate, y_coordinate, image_path = image, width = img_width, height = img_height, text = text,gap = gap, font = font, key_binds = self.__main.key_binds, key_bind_text = key_bind_text).create()
 
 if __name__ == "__main__":
     widget = WidgetGenerator(tk.Tk())
