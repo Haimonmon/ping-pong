@@ -62,6 +62,7 @@ class OpenImage:
         except AttributeError as error:
             print(f"! Invalid Attribute {error}")
 
+
 class GeometryManager():  
     """
     Initialize the GeometryManager with a widget, geometry type, and optional attributes.
@@ -112,7 +113,11 @@ class GeometryManager():
     def place(self) -> None:
         """ set the widget geometry using place manager """
         self.widget.place(**self.geometry_attributes)
+    
 
+class ControlHelpers:
+    def __init__(self):
+        pass
     
 
 
