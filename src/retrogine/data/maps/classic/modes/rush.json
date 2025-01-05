@@ -1,0 +1,7 @@
+{
+    "time_limit": 600,
+    "ball_count": 2,
+    "powerups": false,
+    "max_healths": false,
+    "description": "Double up your priorities :)"
+}

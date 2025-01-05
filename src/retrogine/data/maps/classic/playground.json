@@ -1,0 +1,41 @@
+{
+    "id": "PG1111",
+    "name": "classic",
+    "support": {
+        "gamemodes": ["PVA","PVP"],
+        "gametype": ["timer","survival", "double-ball"]
+    },
+    "platform": {
+        "width": 1000,
+        "height": 600
+    },
+    "walls": {
+        "thickness": 33,
+        "coordinates": [
+                [[0, 0],[100,0]], [[400, 0], [1000, 0]],
+                [[0, 600], [250, 600]], [[400, 600], [1000, 600]],
+                [[0, 0], [0, 150]], [[0, 450], [0, 600]],
+                [[1000, 0], [1000, 400]]
+        ]
+    },
+    "paddles": [
+        {
+            "width":210,
+            "height": 38,
+            "starting_position": [120,300.0, "vertical"],
+            "key_binds": "WS",
+            "can_controlled": ["ai","player"]
+        },
+        {
+            "width":210,
+            "height": 38,
+            "starting_position": [980,300.0, "vertical"],
+            "key_binds": "PL",
+            "can_controlled": ["ai","player"]
+        }
+    ],
+    "ball": {
+        "color": "red",
+        "speed": 4.5
+    }
+}
