@@ -154,7 +154,7 @@ class WidgetGenerator:
         return image
     
 
-    def create_canvas_image_popper(self, canvas: tk.Canvas, widget_to_hover: int, x: int, y: int, image_path: str, img_width: int, img_height: int, debug_show = False, widget_canvas = None) -> int:
+    def create_canvas_image_popper(self, canvas: tk.Canvas, widget_to_hover: int, x: int, y: int, image_path: str, img_width: int, img_height: int, debug_show = False, widget_canvas = None, page = None, text = None) -> int:
         """
         No need to worry if the widget needed to hover is on different canvas
 
@@ -166,12 +166,12 @@ class WidgetGenerator:
 
         self.__photo_reference.append(image)
 
-        image_popper = CanvasImagePopUpHover(canvas, widget_to_hover, x, y, image, debug_show, parent_widget_canvas = widget_canvas).create()
+        image_popper = CanvasImagePopUpHover(canvas, widget_to_hover, x, y, image, debug_show, parent_widget_canvas = widget_canvas, page = page , text = text).create()
 
         return image_popper
     
 
-    def apply_canvas_cursor_auto_move(self, canvas: tk.Canvas, point_coordinates: List, navigations: str, cursor_hidden: bool = False) -> None:
+    def apply_canvas_cursor_auto_move(self, canvas: tk.Canvas, point_coordinates: List, navigations: str, cursor_hidden: bool = False, avail_work_navs = None) -> None:
         """
         Movement coordinates consist of a tuple with a pair element of x and y coordinates
 
@@ -184,7 +184,7 @@ class WidgetGenerator:
         if len(navigations) > 4:
             raise NavigationsReachedMaximum("I Only need 4 navs")
         
-        AutomaticMouseSelector(master_canvas = canvas, coordinates = point_coordinates, button_navigations = navigations, hide_cursor = cursor_hidden).apply()
+        AutomaticMouseSelector(master_canvas = canvas, coordinates = point_coordinates, button_navigations = navigations, hide_cursor = cursor_hidden, avail_working_nav=avail_work_navs).apply()
 
 
     def create_canvas_button(self,  master_canvas: tk.Canvas, text: str, width: int, height: int, x_coordinate: int, y_coordinate: int, command: Callable = None, background_color: str = 'gray', border_color='white', text_color: str = 'black') -> None:
