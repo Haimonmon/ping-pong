@@ -318,7 +318,7 @@ class CanvasJustImage(CanvasWidget):
 
 
 class CanvasImagePopUpHover(CanvasWidget):
-    def __init__(self, master_canvas: tk.Canvas, widget: int, x_coordinate: int, y_coordinate: int, image: tk.Image, debug_show = False, parent_widget_canvas: tk.Canvas = None):
+    def __init__(self, master_canvas: tk.Canvas, widget: int, x_coordinate: int, y_coordinate: int, image: tk.Image, debug_show = False, parent_widget_canvas: tk.Canvas = None, page = None, text = None):
         self.__master_canvas = master_canvas
 
         # * Parent canvas of the widget needed to hover
@@ -330,6 +330,9 @@ class CanvasImagePopUpHover(CanvasWidget):
         self.__y_coordinate = y_coordinate
         self.__debug_show = debug_show
         self.__image = image
+
+        self.__page = page
+        self.__text = text
 
         self.__animation_active = False
 
@@ -352,17 +355,25 @@ class CanvasImagePopUpHover(CanvasWidget):
         """
         When hovered, the image on its position will be show by unhiding it
         """
+        event.widget["cursor"] = "@assets/Link.cur"
         self.__master_canvas.itemconfig(image, state = "normal")
         self.__animation_active = True
         self.animate(image, direction = 1)
+
+        if self.__page:
+            self.__page.current_mode_selected = self.__text
 
 
     def widget_unhover(self, event: tk.Event, image: tk.Image) -> None:
         """
         When unhovered, the image will hide on its position
         """
+        event.widget["cursor"] = "@assets/Alternate.cur"
         self.__animation_active = False
         self.__master_canvas.itemconfig(image, state = "hidden")
+
+        if self.__page:
+            self.__page.current_mode_selected = None
 
 
     def animate(self, image: tk.Image, direction: int) -> None:
@@ -390,12 +401,15 @@ class CanvasImagePopUpHover(CanvasWidget):
 
 
 class AutomaticMouseSelector(CanvasWidget):
-    def __init__(self, master_canvas: tk.Canvas, coordinates: List, button_navigations: str, hide_cursor: bool = False):
+    def __init__(self, master_canvas: tk.Canvas, coordinates: List, button_navigations: str, hide_cursor: bool = False, avail_working_nav: List = None):
         self.__master_canvas = master_canvas
         self.__coordinates = coordinates
         self.__button_navigations = button_navigations.upper()
         self.__hide_cursor = hide_cursor
         self.__current_index = 0
+        self.__avail_working_navs = avail_working_nav
+
+        self.__root = self.__master_canvas.winfo_toplevel()
 
 
     @property
@@ -404,12 +418,20 @@ class AutomaticMouseSelector(CanvasWidget):
 
 
     def apply(self) -> None:
+
+        # self.__master_canvas.update_idletasks()
+
+        # x, y = self.__coordinates[self.__current_index]
+
+        # self.move_cursor_to_coordinates(x, y)
+
+        
         if self.__hide_cursor:
             self.__master_canvas.config(cursor = "none")
         
         self.__master_canvas.bind("<Key>", self.handle_keypress)
         self.__master_canvas.focus_set()
-    
+
 
     def move_cursor_to_coordinates(self, x: int, y: int) -> None:
         canvas_x = self.__master_canvas.winfo_rootx()
@@ -425,9 +447,17 @@ class AutomaticMouseSelector(CanvasWidget):
             return
         
         if key == self.__button_navigations[0] or key == self.__button_navigations[1]:
+            if self.__avail_working_navs and self.__button_navigations.index(key) not in self.__avail_working_navs:
+                return
+            
             self.__current_index = max(0, self.__current_index - 1) # * Move on the list of coordinates given on left indexing direction
+          
         elif key == self.__button_navigations[2] or key == self.__button_navigations[3]:
+            if self.__avail_working_navs and self.__button_navigations.index(key) not in self.__avail_working_navs:
+                return
+            
             self.__current_index = min(len(self.__coordinates) - 1, self.__current_index + 1)  # * Move on the list of coordinates given on right indexing direction
+
         
         x, y = self.__coordinates[self.__current_index]
 
@@ -457,6 +487,11 @@ class CanvasKeybindButton(CanvasWidget):
         side_text = self.__master_canvas.create_text(self.__x_coordinate + self.__gap, self.__y_coordinate, text = self.__text, font = self.__font, fill = '#FADAC1')
 
         self.apply()
+
+        if self.__key_bind[self.__key_bind_text]:
+            self.__master_canvas.tag_bind(image, "<Button-1>", lambda event: self.__key_bind[self.__key_bind_text]())
+            self.__master_canvas.tag_bind(key_bind_text, "<Button-1>", lambda event: self.__key_bind[self.__key_bind_text]())
+            self.__master_canvas.tag_bind(side_text, "<Button-1>", lambda event: self.__key_bind[self.__key_bind_text]())
 
 
     def apply(self) -> None:
