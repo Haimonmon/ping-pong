@@ -1,8 +1,8 @@
 {
     "user_interface": {
-        "current_theme": "default",
+        "default": "summer_space",
         "themes": {
-            "default": {
+            "summer_space": {
                 "background": "#1D313C"
             },
             "cassanova": {}
@@ -18,9 +18,9 @@
             "colors": {}
         },
         "playground": {
-            "current_theme": "default",
+            "default": "summer_space",
             "themes": {
-                "default": {
+                "summer_space": {
                     "background": "#1D313C",
                     "border": "#FADAC1",
                     "text": "#FADAC1"
