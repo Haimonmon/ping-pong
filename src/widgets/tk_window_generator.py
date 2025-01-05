@@ -106,6 +106,12 @@ class WindowGenerator:
             icon = OpenImage(icon_path, image_width = 50, image_height = 50).open_image()
             cls.__instance.__root.iconphoto(True,icon)
 
+    @classmethod
+    def set_cursor(cls, cursor_hidden: bool) -> None:
+        """ Hides the cursor for no reason :) """
+        if cursor_hidden:
+            cls.__instance.__root.config(cursor = 'none')
+
 
     @classmethod
     def exit(cls, widget_list):
@@ -145,13 +151,15 @@ class WindowGenerator:
         
         canvas.delete("all")
 
-
+    
     @classmethod
-    def run(cls,func: Callable = None, icon_path:str = None, cursor_path: str = None, window_width:int = 400, window_height:int = 200, window_title:str = None, resize_status:bool = None) -> None:
+    def run(cls,func: Callable = None, icon_path:str = None, cursor_path: str = None, window_width:int = 400, window_height:int = 200, window_title:str = None, resize_status:bool = None, cursor_hidden = False) -> None:
         """ It enables tkinter window to run """
         if func:
             func() # * This is for pages that needed to showup first when the application open
 
+   
+        cls.__instance.set_cursor(cursor_hidden)
         cls.__instance.set_resize(resize_status)
         cls.__instance.set_size(window_width,window_height)
         cls.__instance.set_title(window_title)
