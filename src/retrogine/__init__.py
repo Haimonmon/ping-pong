@@ -1,12 +1,34 @@
 """
-Retro Engine
+## Retro Engine
+
 A Simple Pong's classic engine allows for ball, playground customization
-[ ♻️ Note ] - Still on Testing 
+
+### Usage
+* Example code
+
+==========================================
+```python
+    import tkinter as tk
+
+    window = tk.Tk()
+
+    ret.PongManager(
+        tkinter_window = window,
+        playground_name = "classic",
+        gamemode = "pvp",
+        gametype = "double_ball"
+    )
+```
+==========================================
+
+[ ♻️ Note ] - Still on Testing and still alot of bugs 🐞
+
+>>> package by: Haimonmon 🧙‍♂️
 """
 
-from .ball import Ball
-from .paddle import Paddle
-from .playground import PlayGround
+from .util import PongManager
 
-
-__all__ = ['Ball', 'Paddle', 'PlayGround']
+__all__ = [
+    'PlayGround',
+    'PongManager'
+]
