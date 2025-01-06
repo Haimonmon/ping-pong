@@ -1,9 +1,9 @@
 {
-    "id": "PG-1111",
-    "name": "Classic",
-    "creator": "Bruhmode 😎",
+    "id": "PG-1133",
+    "name": "Spots",
+    "creator": "Vijaypogi_lmfao⚡",
     "created": "December 23, 2024",
-    "description": "Of course the famous pong's first playground :)",
+    "description": "Testing wall objects",
     "support": {
         "gamemodes": ["PVA","PVP"],
         "gametype": ["rush","survival", "double-ball"]
@@ -15,8 +15,10 @@
     "walls": {
         "thickness": 33,
         "coordinates": [
-                [[0, 0],[1000,0]],
-                [[0,600],[1000, 600]]
+                [[0, 0],[100,0]], [[400, 0], [1000, 0]],
+                [[0, 600], [250, 600]], [[400, 600], [1000, 600]],
+                [[0, 0], [0, 150]], [[0, 450], [0, 600]],
+                [[1000, 0], [1000, 400]]
         ]
     },
     "paddles": {
@@ -40,21 +42,21 @@
             {
                 "width":210,
                 "height": 38,
-                "starting_position": [60,300.0, "vertical"],
+                "starting_position": [120,300.0, "vertical"],
                 "key_binds": "WS",
                 "controlled": "player"
             },
             {
                 "width":210,
                 "height": 38,
-                "starting_position": [1040,300.0, "vertical"],
+                "starting_position": [980,300.0, "vertical"],
                 "key_binds": "PL",
                 "controlled": "player"
             }
         ]
     },
     "ball": {
-        "color": "pink",
-        "speed": 6.5
+        "color": "red",
+        "speed": 4.5
     }
 }
