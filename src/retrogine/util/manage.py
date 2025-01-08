@@ -1,77 +1,109 @@
 import os
-import json
 import tkinter as tk
 
-from ..logic import *
-
 from ..elements.playground import PlayGround
+from .load_data import PlaygroundDataLoader, GamemodeLoader, MapDataLoader
+
 from typing import Dict, Callable, List
 
 class NotSupported(Exception):
     pass
 
+class BruhIdontKnow(Exception):
+    pass
+
 class PongManager:
-    def __init__(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, debug: bool = False) -> None:
+    """
+    Wassupp!! 🎉, Im pong manager where i manage your round and i can startout the fun anytime 💖
+    """
+    def __init__(self) -> None:
+        self.__tkinter_window = None
+        self.__playground_name = None
+        self.__gamemode = None
+        self.__gametype = None
+        self.__debug = None
+
+        # * __file__ to get the exact location of the retro folder located
+        self.__base_path = os.path.dirname(os.path.abspath(__file__))
+        self.__maps_path = os.path.join(self.__base_path,'..', 'data', 'maps')
+
+        self.__maps_data = MapDataLoader(self.__maps_path)
+
+        self.__playground = None
+
+        
+    def setup(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, debug: bool = False) -> None:
+        ''' Lets it prepare the playground for you to get ready to play on <3 🏓'''
         self.__tkinter_window = tkinter_window
         self.__playground_name = playground_name
         self.__gamemode = gamemode.upper()
         self.__gametype = gametype
         self.__debug = debug
 
-        # * __file__ to get the exact location of the retro folder located
-        self.__base_path = os.path.dirname(os.path.abspath(__file__))
-        self.__maps_path = os.path.join(self.__base_path,'..', 'data', 'maps')
+        self.__check_attributes()
+        
+        self._get_playground_data()
 
-        self.selected_map = self.check_map_exist(self.__maps_path)
 
-        self.__playground_data = PlaygroundDataLoader(self.__maps_path, self.__playground_name).load_playground_details()
-        self.__playground_gamemode_data = GamemodeLoader(self.__maps_path, self.__playground_name, self.__gametype).load_playground_gamemode_details()
+    def _get_playground_data(self) -> None:
+        selected_map = self.__check_map_exist(self.__maps_path)
 
-        self.check_gamemode_support(self.__gamemode)
-
-        self.__platform_data = self.__playground_data['platform']
-        self.__wall_data = self.__playground_data['walls']
-        self.__paddle_data = self.__playground_data['paddles'][self.__gamemode]
-        self.__ball_data = self.__playground_data['ball']
-        self.__ball_data['count'] = self.__playground_gamemode_data['ball_count']
+        playground_data = PlaygroundDataLoader(self.__maps_path, selected_map).load_playground_details()
 
         if self.__debug:
-            self.display_map_detail()
-        else:
-            self.prepare()
+            self.display_map_detail(playground_data, selected_map)
+            return
+        
+        playground_gamemode_data = GamemodeLoader(self.__maps_path, selected_map, self.__gametype).load_playground_gamemode_details()
+
+        self.__check_gamemode_support(playground_data, self.__gamemode)
+
+        platform_data = playground_data['platform']
+        wall_data = playground_data['walls']
+        paddle_data = playground_data['paddles'][self.__gamemode]
+        ball_data = playground_data['ball']
+        ball_data['count'] = playground_gamemode_data['ball_count']
+
+        self.__prepare_playground(platform_data, wall_data, paddle_data, ball_data)
 
 
-    def display_map_detail(self) -> None:
+    def display_map_detail(self, playground_data: Dict, selected_map: str) -> None:
+        
         map_directory = os.path.dirname(os.path.abspath(r"retro\data\maps"))
 
         print()
         print('=' * 50)
         print('Map Details')
         print('=' * 50)
-        print(f'ID: {self.__playground_data['id']}\nName: {self.__playground_data['name']}\nCreator: {self.__playground_data['creator']}\nCreated at: {self.__playground_data['created']}\nSupported Gamemodes: {self.__playground_data['support']['gametype']}\nDescription: {self.__playground_data['description']}\nLocation: {os.path.join(map_directory, self.__playground_name)}')
+        print(f'ID: {playground_data['id']}\nName: {playground_data['name']}\nCreator: {playground_data['creator']}\nCreated at: {playground_data['created']}\nSupported Gamemodes: {playground_data['support']['gametype']}\nDescription: {playground_data['description']}\nLocation: {os.path.join(map_directory, selected_map)}')
         print('=' * 50)
         print()
 
 
-    def prepare(self) -> None:
-        playground = PlayGround(
+    def get_map_details(self) -> List:
+        ''' Recieve a full list of maps that are available to play on 🏓'''
+        return self.__maps_data.get_map_details()
+
+    
+    def __prepare_playground(self, platform_data: Dict, wall_data: Dict, paddle_data: List, ball_data: Dict) -> None:
+        self.__playground = PlayGround(
             window = self.__tkinter_window,
             width = 1200,
             height = 700
         )
 
-        playground.add_platform(
-            width = self.__platform_data['width'],
-            height = self.__platform_data['height']
+        self.__playground.add_platform(
+            width = platform_data['width'],
+            height = platform_data['height']
         )
 
-        playground.add_walls(
-            coordinates = self.__wall_data['coordinates'],
-            thickness = self.__wall_data['thickness']
+        self.__playground.add_walls(
+            coordinates = wall_data['coordinates'],
+            thickness = wall_data['thickness']
         )
 
-        for paddle in self.__paddle_data:
-            playground.add_paddle(
+        for paddle in paddle_data:
+            self.__playground.add_paddle(
                 width = paddle['width'],
                 height = paddle['height'],
                 position = paddle['starting_position'],
@@ -79,16 +111,16 @@ class PongManager:
                 controlled = paddle['controlled']
             )
 
-        playground.add_pong_ball(
-            color = self.__ball_data['color'],
-            speed = self.__ball_data['speed'],
-            num = self.__ball_data['count']
+        self.__playground.add_pong_ball(
+            color = ball_data['color'],
+            speed = ball_data['speed'],
+            num = ball_data['count']
         )
 
-        playground.start()
+        self.__playground.start()
 
-        
-    def check_map_exist(self, maps_path: str) -> str:
+    # ? Just data validation checkers
+    def __check_map_exist(self, maps_path: str) -> str:
         if not os.path.exists(maps_path):
             raise FileNotFoundError(f"The directory '{maps_path}' does not exist.")
 
@@ -101,63 +133,13 @@ class PongManager:
         return maps[maps.index(self.__playground_name)]
     
 
-    def check_gamemode_support(self, gamemode: str) -> None:
-        if gamemode not in self.__playground_data['support']['gamemodes']:
+    def __check_gamemode_support(self, playground_data: Dict, gamemode: str) -> None:
+        if gamemode not in playground_data['support']['gamemodes']:
             raise NotSupported(f'The gamemode ( {gamemode} ) given is not supported for this map')
-
-
-class MissingPlaygroundFile(Exception):
-    pass
-
-
-class PlaygroundDataLoader:
-    def __init__(self, maps_path, playground_name: str):
-        self.__playground_name = playground_name
-
-        self.__maps_path = maps_path
-        self.__playground_file = os.path.join(self.__maps_path, self.__playground_name,'playground.json')
-
-
-    def load_playground_details(self) -> Dict:
-        if not os.path.exists(self.__playground_file):
-            raise MissingPlaygroundFile(f"Playground data file not found: {self.__playground_file}")
         
-        with open(self.__playground_file, 'r') as playground:
-            playground_data = json.load(playground)
-
-        return playground_data
-    
-
-class GamemodeLoader:
-    def __init__(self, maps_path: str, playground_name: str, gametype: str) -> None:
-        self.__maps_path = maps_path
-        self.__playground_name = playground_name
-        self.__gametype = gametype.lower()
-
-        self.__playground_mode_file = os.path.join(self.__maps_path, self.__playground_name, "modes", f'{self.__gametype}.json')
-        
-    def select_gametype(self, gametype: str) -> Callable:
-        gametypes = {
-            "survival": Survival,
-            "rush": Rush,
-            "double_ball": DualBall
-        }
-
-        if gametype.lower() not in gametypes:
-            raise ValueError(f"Invalid gametype: {gametype}. Available options: {list(gametypes.keys())}")
-
-        return gametypes[gametype.lower()](self.playground)
-    
-
-    def load_playground_gamemode_details(self) -> Dict:
-        if not os.path.exists(self.__playground_mode_file):
-            raise MissingPlaygroundFile(f"Playground data file mode not found: {self.__playground_mode_file}")
-        
-        with open(self.__playground_mode_file, 'r') as mode:
-            playground_mode_data = json.load(mode)
-
-        return playground_mode_data
-
+    def __check_attributes(self) -> None:
+        if not self.__gamemode and not self.__playground_name and not self.__gametype:
+            raise BruhIdontKnow('Kindly Choose a map first pls :)')
 
 if __name__ == "__main__":
       loader = PongManager(
