@@ -12,7 +12,9 @@ A Simple Pong's classic engine allows for ball, playground customization
 
     window = tk.Tk()
 
-    ret.PongManager(
+    manager = ret.PongManager()
+    
+    manager.setup(
         tkinter_window = window,
         playground_name = "classic",
         gamemode = "pvp",
@@ -27,8 +29,11 @@ A Simple Pong's classic engine allows for ball, playground customization
 """
 
 from .util import PongManager
+from .elements import PlayGround
 
 __all__ = [
     'PlayGround',
     'PongManager'
 ]
+
+
