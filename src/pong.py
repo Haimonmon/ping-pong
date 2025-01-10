@@ -1,4 +1,4 @@
-import ui
+import pages
 import widgets as tkw
 
 class PongClassic:
@@ -9,18 +9,17 @@ class PongClassic:
 
         self.widget_list = [] # * Planning to change this way of single paging soon :)
 
-        self.main_menu = ui.MainMenuUI(self)
-        self.settings = ui.SettingsUI(self, previous_page = self.main_menu)
-        self.gamemodes = ui.GameModesUI(self, previous_page = self.main_menu)
-        self.playground_selection = ui.PlayGroundSelection(self, previous_page = self.gamemodes)
+        self.main_menu = pages.MainMenuUI(self)
+        self.settings = pages.SettingsUI(self, previous_page = self.main_menu)
+        self.gamemodes = pages.GameModesUI(self, previous_page = self.main_menu)
+        self.playground_selection = pages.PlayGroundSelection(self, previous_page = self.gamemodes)
       
         self.window.run(
             func = self.main_menu.render, 
-            window_width = 1000, 
+            window_width = 1000,
             window_height = 580, 
             window_title = "Pong Classic ( Alpha )", 
             resize_status = False, 
-            cursor_hidden = False
         )
 
     def quit(self) -> None:
