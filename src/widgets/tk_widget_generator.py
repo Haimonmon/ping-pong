@@ -204,6 +204,7 @@ class WidgetGenerator:
 
         CanvasKeybindButton(master_canvas, x_coordinate, y_coordinate, image_path = image, width = img_width, height = img_height, text = text,gap = gap, font = font, key_binds = self.__main.key_binds, key_bind_text = key_bind_text).create()
 
+
 if __name__ == "__main__":
     widget = WidgetGenerator(tk.Tk())
     widget.create_frame()
