@@ -28,6 +28,9 @@ class PlayGround:
           self.__platform_width = None
           self.__platform_height = None
 
+          self.__platform_new_width = None
+          self.__platform_new_height = None
+
           self.platform_padding = None
 
           # * Map states
@@ -81,7 +84,10 @@ class PlayGround:
           """
           Returns an object contains the dimension of platform to be played with
           """
-          return {'width': self.__platform_width, 'height': self.__platform_height}
+          return {
+               'width': self.__platform_width, 'height': self.__platform_height,
+               'new_width': self.__platform_new_width, 'new_height': self.__platform_new_height
+               }
      
 
      @property
@@ -116,7 +122,12 @@ class PlayGround:
           ```
           [ ♻️ Note ]: Walls are only valid for Horizontal and Vertical positions for now.
           """
-          self.__wall = Wall(coordinates, self, color, thickness)
+          if self.__platform_new_width and self.__platform_new_height and self.__platform.responsive:
+               coordinate = self.help_adjust(coordinates)
+          else:
+               coordinate = coordinates
+
+          self.__wall = Wall(coordinate, self, color, thickness, self.__platform.responsive)
                
 
      def add_pong_ball(self, color: str = "red", speed: float = 4, size: int = 10, num: int = 1) -> None:
@@ -137,19 +148,42 @@ class PlayGround:
           self.__paddles.append(paddle)
 
      
-     def add_platform(self, width: int, height: int, color: str = 'black', padding: int = 100) -> None:
+     def add_platform(self, width: int, height: int, color: str = 'black', padding: int = 100, responsive: bool = False, new_width: int = None, new_height: int = None) -> None:
           """
           Adds the platform where the fun and game round happens 🎯
           """
 
-          platform = Platform(self, width, height, padding, color)
+          platform = Platform(self, width, height, padding, color, responsive, new_width, new_height)
 
           self.__platform_width = width
           self.__platform_height = height
 
+          self.__platform_new_width = new_width
+          self.__platform_new_height = new_height
+
           self.platform_padding = platform.padding
 
           self.__platform = platform
+
+
+
+     def help_adjust(self, coordinates) -> List:
+        new_coordinates: List = []
+
+        scale_width = self.__platform_new_width / self.__platform_width 
+        scale_height = self.__platform_new_height / self.__platform_height
+
+        for start, end in coordinates:
+            new_start = [self.scale_coordinate(start[0], scale_width), self.scale_coordinate(start[1], scale_height)]
+            new_end = [self.scale_coordinate(end[0], scale_width), self.scale_coordinate(end[1], scale_height)]
+
+            new_coordinates.append([new_start, new_end])
+        
+        return new_coordinates
+
+
+     def scale_coordinate(self, coordinate: int, scale: float) -> int:
+        return int(coordinate * scale)
 
 
      def render(self) -> None:
