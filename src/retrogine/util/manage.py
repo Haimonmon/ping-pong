@@ -31,6 +31,11 @@ class PongManager:
 
         self.__playground = None
 
+    
+    def customize_playground(self, window: tk.Tk, width: int = 1200, height: int = 700, color: str = 'black') -> PlayGround:
+        """ Lets you to build and imagine your own playground to build and play with <3 """
+        return PlayGround(window, width, height, color)
+
         
     def setup(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, debug: bool = False) -> None:
         ''' Lets it prepare the playground for you to get ready to play on <3 🏓'''
