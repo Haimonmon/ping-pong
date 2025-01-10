@@ -14,7 +14,7 @@ class Wall:
     """
     Contains the walls around the playground or playfield 🧱
     """
-    def __init__(self, coordinates: List, playground: object, color: str = "white", thickness = 20):
+    def __init__(self, coordinates: List, playground: object, color: str = "white", thickness = 20, responsive: bool = False):
         '''
         * wall comes up with start and end that each contain x and y coordinates
         * Example : [(0,0), (0,1000)] 
@@ -25,13 +25,17 @@ class Wall:
         self.playground = playground
 
         self.thickness = thickness
+
         self.color = color
+
+        self.responsive = responsive
 
         self.__platform = self.playground.platform
         self.__platform_width = self.playground.platform_dimension['width']
         self.__platform_height = self.playground.platform_dimension['height']
 
-        self.check_walls()
+
+        # self.check_walls()
         self.apply_thickness()
         self.render()
 
@@ -70,14 +74,22 @@ class Wall:
         checks if the given wall coordinates are valid to its platform dimensions
         """
         return any(coord > limit or coord < 0 for coord, limit in zip(wall_num, (self.__platform_width, self.__platform_height)))
-
     
+
     def apply_thickness(self) -> None:
         """
         Applies thickness to the walls by adjusting coordinates
 
         forming a complete rectangular box (top, bottom, left, and right sides)
         """
+
+        self.playground.window.update()
+        print()
+        print('New?', self.coordinates)
+        print('Canvas Width: ', self.__platform.winfo_width())
+        print('Canvas Height: ', self.__platform.winfo_height())
+        print()
+
         thickened_walls = []
 
         half_thickness = self.thickness // 2
@@ -86,17 +98,19 @@ class Wall:
         padding = self.playground.platform_padding
 
         for start, end in self.coordinates:
-
             if start[1] == end[1]: # * Horizontal wall
-                thickened_walls.append([
-                        *self._create_horizontal_side(start, end, -half_thickness + padding, -half_thickness + padding, +half_thickness + padding, -half_thickness + padding),
+                thickened_walls.append(
+                    [
+                        *self._create_horizontal_side(start, end, -half_thickness + padding, -half_thickness +
+                                                        padding, +half_thickness + padding, -half_thickness + padding),
                         *self._create_horizontal_side(start, end, -half_thickness + padding, +half_thickness + padding, +half_thickness + padding, +half_thickness + padding)
                     ]
                 )
 
                 thickened_walls.append(
                     [
-                        *self._create_vertical_side(start, -half_thickness + padding, -half_thickness + padding, -half_thickness + padding, +half_thickness + padding),
+                        *self._create_vertical_side(start, -half_thickness + padding, -half_thickness +
+                                                    padding, -half_thickness + padding, +half_thickness + padding),
                         *self._create_vertical_side(end, +half_thickness + padding, -half_thickness + padding, +half_thickness + padding, +half_thickness + padding)
                     ]
                 )
@@ -106,20 +120,29 @@ class Wall:
             elif start[0] == end[0]: # * Vertical wall
                 thickened_walls.append(
                     [
-                        *self._create_vertical_side(start, -half_thickness + padding, -half_thickness + padding, +half_thickness + padding, -half_thickness + padding),
+                        *self._create_vertical_side(start, -half_thickness + padding, -half_thickness +
+                                                    padding, +half_thickness + padding, -half_thickness + padding),
                         *self._create_vertical_side(end, -half_thickness + padding, +half_thickness + padding, +half_thickness + padding, +half_thickness + padding)
                     ]
                 )
 
                 thickened_walls.append(
                     [
-                        *self._create_horizontal_side(start, end, -half_thickness + padding, -half_thickness + padding, -half_thickness + padding, +half_thickness + padding),
+                        *self._create_horizontal_side(start, end, -half_thickness + padding, -half_thickness +
+                                                    padding, -half_thickness + padding, +half_thickness + padding),
                         *self._create_horizontal_side(start, end, +half_thickness + padding, -half_thickness + padding, +half_thickness + padding, +half_thickness + padding)
                     ]
                 )
 
         # * change old coordinates to new ones
         self.coordinates = thickened_walls
+
+
+        def _create_horizontal_wall(self, start, end, half_thickness) -> None:
+            pass
+
+        def _create_vertical_wall(self, start, end, half_thickness) -> None:
+            pass
 
     def _create_horizontal_side(self, start_point, end_point, adjust_x1, adjust_y1, adjust_x2, adjust_y2) -> None:
         return [
