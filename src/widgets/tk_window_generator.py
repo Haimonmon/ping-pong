@@ -52,9 +52,12 @@ class WindowGenerator:
         return cls.__instance
 
     # __root = tkr.Tk()
-    # __root.title("Reused Tkinter OwO | Window") 
-    
+    # __root.title("Reused Tkinter OwO | Window")
 
+    @classmethod
+    def root(cls) -> tk.Tk:
+        return cls.__instance.__root
+    
     @classmethod
     def widget_generator(cls) -> WidgetGenerator:
         """ Make an instance of it and ready to go """
@@ -140,14 +143,15 @@ class WindowGenerator:
 
 
     @classmethod
-    def clear_canvas(cls, canvas: tk.Canvas) -> None:
+    def clear_canvas(cls, canvas: tk.Canvas, clear_binds: bool = True) -> None:
         """
         Allow for reuse of canvas 
         """
         if not isinstance(canvas, tk.Canvas):
             return
         
-        cls.key_binds.clear()
+        if clear_binds:
+            cls.key_binds.clear()
         
         canvas.delete("all")
 
