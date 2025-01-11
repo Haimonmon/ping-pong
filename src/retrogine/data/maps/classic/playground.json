@@ -10,10 +10,12 @@
     },
     "platform": {
         "width": 1000,
-        "height": 600
+        "height": 600,
+        "background_color": "#1D313C"
     },
     "walls": {
         "thickness": 33,
+        "color": "#DE951F",
         "coordinates": [
                 [[0, 0],[1000,0]],
                 [[0,600],[1000, 600]]
@@ -26,14 +28,16 @@
                 "height": 38,
                 "starting_position": [120,300.0, "vertical"],
                 "key_binds": "WS",
-                "controlled": "player"
+                "controlled": "player",
+                "color": "#73A627"
             },
             {
                 "width":210,
                 "height": 38,
                 "starting_position": [980,300.0, "vertical"],
                 "key_binds": "PL",
-                "controlled": "ai"
+                "controlled": "ai",
+                "color": "#8373B9"
             }
         ],
         "PVP": [
@@ -42,19 +46,21 @@
                 "height": 38,
                 "starting_position": [60,300.0, "vertical"],
                 "key_binds": "WS",
-                "controlled": "player"
+                "controlled": "player",
+                "color": "#73A627"
             },
             {
                 "width":210,
                 "height": 38,
                 "starting_position": [1040,300.0, "vertical"],
                 "key_binds": "PL",
-                "controlled": "player"
+                "controlled": "player",
+                "color": "#8373B9"
             }
         ]
     },
     "ball": {
-        "color": "pink",
+        "color": "#E86458",
         "speed": 6.5
     }
 }

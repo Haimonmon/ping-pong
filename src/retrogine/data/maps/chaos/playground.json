@@ -1,0 +1,69 @@
+{
+    "id": "PG-GPT2",
+    "name": "Chaos",
+    "creator": "ChatGPT",
+    "created": "January 11, 2025",
+    "description": "Welcome to Chaos Haven—a labyrinth of walls and narrow escapes where only the bold survive. Walls block your path, gaps tease your precision, and every bounce feels like fate’s cruel joke. Think you can handle the madness? Prove it. Or rage quit, we won’t judge. 😉",
+    "support": {
+        "gamemodes": ["PVA", "PVP"],
+        "gametype": ["rush", "survival", "double-ball"]
+    },
+    "platform": {
+        "width": 1000,
+        "height": 600,
+        "background_color": "#2F2F2F"
+    },
+    "walls": {
+        "thickness": 35,
+        "color": "#FF4500",
+        "coordinates": [
+            [[0, 0], [300, 0]], [[350, 0], [700, 0]], [[750, 0], [1000, 0]],
+            [[0, 600], [250, 600]], [[300, 600], [650, 600]], [[700, 600], [1000, 600]],
+            [[200, 150], [200, 450]], [[800, 150], [800, 450]],
+            [[400, 100], [600, 100]], [[400, 400], [600, 400]],
+            [[500, 200], [500, 400]]
+        ]
+    },
+    "paddles": {
+        "PVA": [
+            {
+                "width": 100,
+                "height": 30,
+                "starting_position": [100, 300.0, "vertical"],
+                "key_binds": "WS",
+                "controlled": "player",
+                "color": "#42A5F5"
+            },
+            {
+                "width": 100,
+                "height": 30,
+                "starting_position": [900, 300.0, "vertical"],
+                "key_binds": "PL",
+                "controlled": "ai",
+                "color": "#FF7043"
+            }
+        ],
+        "PVP": [
+            {
+                "width": 100,
+                "height": 30,
+                "starting_position": [100, 300.0, "vertical"],
+                "key_binds": "WS",
+                "controlled": "player",
+                "color": "#42A5F5"
+            },
+            {
+                "width": 100,
+                "height": 30,
+                "starting_position": [900, 300.0, "vertical"],
+                "key_binds": "PL",
+                "controlled": "player",
+                "color": "#FF7043"
+            }
+        ]
+    },
+    "ball": {
+        "color": "#FFD700",
+        "speed": 6
+    }
+}
