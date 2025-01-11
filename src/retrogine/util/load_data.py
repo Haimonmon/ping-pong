@@ -27,6 +27,9 @@ class MapDataLoader:
                     'created': playground_data['created'],
                     'description': playground_data['description'],
                     'support': playground_data['support'],
+                    'playground_platform': playground_data['platform'],
+                    'playground_wall': playground_data['walls'],
+                    'playground_paddles': playground_data['paddles']
                 }
             )
         
