@@ -32,12 +32,12 @@ class PongManager:
         self.__playground = None
 
     
-    def customize_playground(self, window: tk.Tk, width: int = 1200, height: int = 700, color: str = 'black') -> PlayGround:
+    def customize_playground(self, window: tk.Tk, width: int = 1200, height: int = 700, color: str = 'black', render: bool = True) -> PlayGround:
         """ Lets you to build and imagine your own playground to build and play with <3 """
-        return PlayGround(window, width, height, color)
+        return PlayGround(window, width, height, color, render = render)
 
         
-    def setup(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, debug: bool = False) -> None:
+    def setup(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, debug: bool = False, automatic_start = True) -> Dict:
         ''' Lets it prepare the playground for you to get ready to play on <3 🏓'''
         self.__tkinter_window = tkinter_window
         self.__playground_name = playground_name
@@ -47,10 +47,10 @@ class PongManager:
 
         self.__check_attributes()
         
-        self._get_playground_data()
+        return self._get_playground_data(automatic_start)
 
 
-    def _get_playground_data(self) -> None:
+    def _get_playground_data(self, automatic_start: bool) -> Dict:
         selected_map = self.__check_map_exist(self.__maps_path)
 
         playground_data = PlaygroundDataLoader(self.__maps_path, selected_map).load_playground_details()
@@ -69,7 +69,7 @@ class PongManager:
         ball_data = playground_data['ball']
         ball_data['count'] = playground_gamemode_data['ball_count']
 
-        self.__prepare_playground(platform_data, wall_data, paddle_data, ball_data)
+        return self.__prepare_playground(platform_data, wall_data, paddle_data, ball_data, automatic_start)
 
 
     def display_map_detail(self, playground_data: Dict, selected_map: str) -> None:
@@ -90,21 +90,24 @@ class PongManager:
         return self.__maps_data.get_map_details()
 
     
-    def __prepare_playground(self, platform_data: Dict, wall_data: Dict, paddle_data: List, ball_data: Dict) -> None:
+    def __prepare_playground(self, platform_data: Dict, wall_data: Dict, paddle_data: List, ball_data: Dict, automatic_start: bool) -> Dict:
         self.__playground = PlayGround(
             window = self.__tkinter_window,
-            width = 1200,
-            height = 700
+            width = 1300,
+            height = 730,
+            color = "#1D313C"
         )
 
-        self.__playground.add_platform(
+        platform = self.__playground.add_platform(
             width = platform_data['width'],
-            height = platform_data['height']
+            height = platform_data['height'],
+            color = platform_data['background_color']
         )
 
         self.__playground.add_walls(
             coordinates = wall_data['coordinates'],
-            thickness = wall_data['thickness']
+            thickness = wall_data['thickness'],
+            color = wall_data['color']
         )
 
         for paddle in paddle_data:
@@ -113,7 +116,8 @@ class PongManager:
                 height = paddle['height'],
                 position = paddle['starting_position'],
                 keys = paddle['key_binds'],
-                controlled = paddle['controlled']
+                controlled = paddle['controlled'],
+                color = paddle['color']
             )
 
         self.__playground.add_pong_ball(
@@ -122,7 +126,12 @@ class PongManager:
             num = ball_data['count']
         )
 
-        self.__playground.start()
+        if automatic_start:
+            self.__playground.start()
+
+        return {
+            "platform_canvas": platform
+        }
 
     # ? Just data validation checkers
     def __check_map_exist(self, maps_path: str) -> str:
