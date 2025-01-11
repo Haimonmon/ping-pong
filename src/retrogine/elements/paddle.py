@@ -76,12 +76,21 @@ class Paddle:
         """
        
         for start_bottom, end_bottom, start_top, end_top in self.coordinates:
-            bottom_line: tk.Canvas = self.platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='yellow')
-            top_line: tk.Canvas = self.platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='yellow')
+            bottom_line: tk.Canvas = self.platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='black', width = 2.5)
+            top_line: tk.Canvas = self.platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='black', width = 2.5)
 
-            # * Can be used for later movements of paddle
+            x1 = min(start_bottom[0], end_bottom[0], start_top[0], end_top[0])
+            y1 = min(start_bottom[1], end_bottom[1], start_top[1], end_top[1])
+            x2 = max(start_bottom[0], end_bottom[0], start_top[0], end_top[0])
+            y2 = max(start_bottom[1], end_bottom[1], start_top[1], end_top[1])
+
+            # Draw the rectangle
+            rectangle: tk.Canvas = self.platform.create_rectangle(x1, y1, x2, y2, width=1, fill = self.color)
+
+            # * Save the rendered shapes for later use (movement or removal)
             self.rendered_lines.append(bottom_line)
             self.rendered_lines.append(top_line)
+            self.rendered_lines.append(rectangle)
 
     def check_paddle(self):
         """
@@ -245,13 +254,13 @@ class PaddleMovementHandler:
 
             if self.paddle.controlled == 'player' and self.paddle_direction == self.paddle.keys[0]:
                 if y > side1_stop_range[2]:
-                    y -= 2.5
+                    y -= 4.5
                 else:
                     y = side1_stop_range[2]
                 
             if self.paddle.controlled == 'player' and self.paddle_direction == self.paddle.keys[1]:
                 if y < side2_stop_range[2]:
-                    y += 2.5
+                    y += 4.5
                 else:
                     y = side2_stop_range[2]
                 
