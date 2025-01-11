@@ -45,11 +45,26 @@ class Wall:
         Displays all of the wall on the given playground tkinter canvas
         """
         for start_bottom, end_bottom, start_top, end_top in self.coordinates:
-            self.__platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='blue')
-            self.__platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='blue')
+            # self.__platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='')
+            # self.__platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='')
 
             horizontal_wall = start_bottom[1] == end_bottom[1]
             vertical_wall = start_bottom[0] == end_bottom[0]
+
+            if horizontal_wall:
+                self.__platform.create_rectangle(
+                    start_bottom[0], start_bottom[1] + self.thickness,
+                    end_bottom[0], end_bottom[1],
+                    fill=self.color, outline = self.color
+                )
+
+            elif vertical_wall:
+
+                self.__platform.create_rectangle(
+                    start_bottom[0] + self.thickness, start_bottom[1],
+                    end_bottom[0], end_bottom[1],
+                    fill=self.color, outline = self.color
+                )
 
     def check_walls(self) -> None:
         """
