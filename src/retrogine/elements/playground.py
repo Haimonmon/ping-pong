@@ -14,7 +14,7 @@ class PlayGround:
      """
      Players playground or court 🏓
      """
-     def __init__(self, window: tk.Tk, width: int, height: int, color: str = "black", game: object = None) -> None:
+     def __init__(self, window: tk.Tk, width: int, height: int, color: str = "black", game: object = None, render: bool = True) -> None:
           self.window = window
 
           # * Playground tkinter canvas
@@ -37,7 +37,8 @@ class PlayGround:
           self.color = color
           self.window.configure(background = self.color)
 
-          self.render()
+          if render:
+               self.render()
 
           # * Platform 🎯
           self.__platform = None
@@ -138,22 +139,22 @@ class PlayGround:
           self.__balls.add_ball(color, speed, size, num)
      
      
-     def add_paddle(self, height: float, width: float,position: Tuple[int, int, str], keys: str, controlled: str) -> None:
+     def add_paddle(self, height: float, width: float,position: Tuple[int, int, str], keys: str, controlled: str, color: str = 'yellow') -> None:
           """
           Adds paddle into the Platform
 
           [ ♻️ Note ]: Vertical paddle will be only available for now
           """
-          paddle = Paddle(self, position, keys, height, width, controlled)
+          paddle = Paddle(self, position, keys, height, width, controlled, color)
           self.__paddles.append(paddle)
 
      
-     def add_platform(self, width: int, height: int, color: str = 'black', padding: int = 100, responsive: bool = False, new_width: int = None, new_height: int = None) -> None:
+     def add_platform(self, width: int, height: int, color: str = 'black', padding: int = 100, master_canvas: tk.Canvas = None, responsive: bool = False, new_width: int = None, new_height: int = None, pos_x: int = 0.5, pos_y: int = 0.5, border_thickness: int = 1) -> tk.Canvas:
           """
           Adds the platform where the fun and game round happens 🎯
           """
 
-          platform = Platform(self, width, height, padding, color, responsive, new_width, new_height)
+          platform = Platform(self, width, height, padding, color, responsive, master_canvas, new_width, new_height, pos_x = pos_x, pos_y = pos_y, border_size = border_thickness)
 
           self.__platform_width = width
           self.__platform_height = height
@@ -164,6 +165,8 @@ class PlayGround:
           self.platform_padding = platform.padding
 
           self.__platform = platform
+
+          return platform.canvas
 
 
 
