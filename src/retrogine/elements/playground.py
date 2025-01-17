@@ -55,6 +55,8 @@ class PlayGround:
           # * Gamemode chosen 💖
           self.game = game
 
+          self.__thread_running = False
+
  
      @property
      def platform(self) -> int:
@@ -124,7 +126,7 @@ class PlayGround:
           [ ♻️ Note ]: Walls are only valid for Horizontal and Vertical positions for now.
           """
           if self.__platform_new_width and self.__platform_new_height and self.__platform.responsive:
-               coordinate = self.help_adjust(coordinates)
+               coordinate = self.help_adjust_coordinates(coordinates)
           else:
                coordinate = coordinates
 
@@ -145,7 +147,16 @@ class PlayGround:
 
           [ ♻️ Note ]: Vertical paddle will be only available for now
           """
-          paddle = Paddle(self, position, keys, height, width, controlled, color)
+          if self.__platform_new_width and self.__platform_new_height and self.__platform.responsive:
+              coordinate = self.help_adjust_position(position)
+              tangkad: int = self.help_adjust_height(height)
+              lapad: int = self.help_adjust_width(width)
+          else:
+              coordinate = position
+              tangkad: int = height
+              lapad: int = width
+
+          paddle = Paddle(self, coordinate, keys, tangkad, lapad, controlled, color)
           self.__paddles.append(paddle)
 
      
@@ -169,20 +180,44 @@ class PlayGround:
           return platform.canvas
 
 
+     def help_adjust_width(self, width: int) -> int:
+          scale_width = self.__platform_new_width / self.__platform_width
 
-     def help_adjust(self, coordinates) -> List:
-        new_coordinates: List = []
+          return width * scale_width
 
-        scale_width = self.__platform_new_width / self.__platform_width 
-        scale_height = self.__platform_new_height / self.__platform_height
 
-        for start, end in coordinates:
-            new_start = [self.scale_coordinate(start[0], scale_width), self.scale_coordinate(start[1], scale_height)]
-            new_end = [self.scale_coordinate(end[0], scale_width), self.scale_coordinate(end[1], scale_height)]
+     def help_adjust_height(self, height: int) -> int:
+          scale_height = self.__platform_new_height / self.__platform_height
 
-            new_coordinates.append([new_start, new_end])
-        
-        return new_coordinates
+          return height * scale_height
+
+
+     def help_adjust_position(self, position: List) -> List:
+          """ Yung position nayung nag adjust bruhhh... """
+          scale_width = self.__platform_new_width / self.__platform_width
+          scale_height = self.__platform_new_height / self.__platform_height
+          
+          scaled_x = self.scale_coordinate(position[0], scale_width)
+          scaled_y = self.scale_coordinate(position[1], scale_height)
+
+          return [scaled_x, scaled_y, position[2]]
+
+
+     def help_adjust_coordinates(self, coordinates: List) -> List:
+          """ coordinates nayung nag adjust bruhhh... """
+
+          new_coordinates: List = []
+
+          scale_width: int = self.__platform_new_width / self.__platform_width 
+          scale_height: int = self.__platform_new_height / self.__platform_height
+
+          for start, end in coordinates:
+               new_start = [self.scale_coordinate(start[0], scale_width), self.scale_coordinate(start[1], scale_height)]
+               new_end = [self.scale_coordinate(end[0], scale_width), self.scale_coordinate(end[1], scale_height)]
+
+               new_coordinates.append([new_start, new_end])
+          
+          return new_coordinates
 
 
      def scale_coordinate(self, coordinate: int, scale: float) -> int:
@@ -214,6 +249,48 @@ class PlayGround:
           """
           print('Welcome to the Ping pong\'s PlayGround')
           self.window.mainloop()
+     
+
+     def start_roundloop(self) -> None:
+          """ Starts all event gameloops on the entire playground """
+          if not self.__thread_running:
+               for paddle in self.__paddles:
+                    paddle.start()
+
+               for ball in self.__balls.balls:
+                    ball.start()
+
+               self.__thread_running = True
+
+          self.window.bind("<Escape>", lambda event: self.stop_roundloop())
+          self.window.bind("<Return>", lambda event: self.start_roundloop())
+
+          # self.window.after(100, self.check_threads_stopped)
+          
+
+     def stop_roundloop(self) -> None:
+          """ Stops all event gameloops on the entire playground """
+          for paddle in self.__paddles:
+               paddle.stop()
+
+          for ball in self.__balls.balls:
+               ball.stop()
+
+        
+          self.__thread_running = False
+          self.window.after(100, self.check_threads_stopped)
+
+     def check_threads_stopped(self) -> None:
+          """Checks if all threads have stopped and prints a message."""
+          all_threads_stopped = all(not paddle.thread.is_alive() for paddle in self.__paddles) and \
+                                   all(not ball.thread.is_alive() for ball in self.__balls.balls)
+      
+          if all_threads_stopped:
+               print()
+               print("All events stopped...")
+          else:
+               # Check again after 100ms
+               self.window.after(100, self.check_threads_stopped)
 
 
 class MaximumPongBalls(Exception):
