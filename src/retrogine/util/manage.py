@@ -4,7 +4,7 @@ import tkinter as tk
 from ..elements.playground import PlayGround
 from .load_data import PlaygroundDataLoader, GamemodeLoader, MapDataLoader
 
-from typing import Dict, Callable, List
+from typing import Dict, Callable, List, Literal
 
 class NotSupported(Exception):
     pass
@@ -22,6 +22,7 @@ class PongManager:
         self.__gamemode = None
         self.__gametype = None
         self.__debug = None
+        self.__responsiveness = None
 
         # * __file__ to get the exact location of the retro folder located
         self.__base_path = os.path.dirname(os.path.abspath(__file__))
@@ -37,13 +38,14 @@ class PongManager:
         return PlayGround(window, width, height, color, render = render)
 
         
-    def setup(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, debug: bool = False, automatic_start = True) -> Dict:
+    def setup(self, tkinter_window: tk.Tk, playground_name: str, gamemode: str, gametype: str, automatic_start = True, request: Literal['map-details', 'playable-maps'] = None, responsiveness = False) -> Dict:
         ''' Lets it prepare the playground for you to get ready to play on <3 🏓'''
         self.__tkinter_window = tkinter_window
         self.__playground_name = playground_name
         self.__gamemode = gamemode.upper()
         self.__gametype = gametype
-        self.__debug = debug
+        self.__request = request
+        self.__responsiveness = responsiveness
 
         self.__check_attributes()
         
@@ -55,7 +57,11 @@ class PongManager:
 
         playground_data = PlaygroundDataLoader(self.__maps_path, selected_map).load_playground_details()
 
-        if self.__debug:
+        if self.__request == 'playable-maps':
+            self.__list_maps()
+            return
+
+        if self.__request == 'map-details':
             self.display_map_detail(playground_data, selected_map)
             return
         
@@ -71,6 +77,31 @@ class PongManager:
 
         return self.__prepare_playground(platform_data, wall_data, paddle_data, ball_data, automatic_start)
 
+    def __list_maps(self) -> None:
+        """ Wanna see some available Maps? """
+
+        maps: Dict = self.__maps_data.get_map_details()
+
+        col1_width = max(len(map['id']) for map in maps) + 7
+        col2_width = max(len(map['name']) for map in maps) + 10
+        col3_width = max(len(map['created']) for map in maps) + 10
+        col4_width = max(len(map['creator']) for map in maps) + 4
+
+        total_width = col1_width + col2_width + col3_width + col4_width + 4
+
+        print()
+        print('-' * total_width)
+        print(f"|{'Pong - Playable Maps':^{total_width - 2}}|")
+        print('-' * total_width)
+        print(f"|{'ID':^{col1_width}}|{'Name':^{col2_width}}|{'Creator':^{col4_width}}|{'Date Created':^{col3_width - 1}}|")
+        print('-' * total_width)
+
+        for map in maps:
+            print(f"|{map['id']:^{col1_width}}|{map['name']:^{col2_width}}|{map['creator']:^{col4_width}}|{map['created']:^{col3_width - 1}}|")
+        print('-' * total_width)
+        print(f"|{'':^{total_width - 2}}|")
+        print('-' * total_width)
+        print()
 
     def display_map_detail(self, playground_data: Dict, selected_map: str) -> None:
         
@@ -85,9 +116,16 @@ class PongManager:
         print()
 
 
-    def get_map_details(self) -> List:
+    def get_map_details(self, map_name: str = None) -> List:
         ''' Recieve a full list of maps that are available to play on 🏓'''
-        return self.__maps_data.get_map_details()
+
+        list_maps = self.__maps_data.get_map_details()
+
+        if map_name:
+            map_data = next((map for map in list_maps if map["name"].lower() == map_name.lower()), None)
+            return map_data
+
+        return list_maps
 
     
     def __prepare_playground(self, platform_data: Dict, wall_data: Dict, paddle_data: List, ball_data: Dict, automatic_start: bool) -> Dict:
@@ -98,11 +136,25 @@ class PongManager:
             color = "#1D313C"
         )
 
-        platform = self.__playground.add_platform(
-            width = platform_data['width'],
-            height = platform_data['height'],
-            color = platform_data['background_color']
-        )
+
+        if self.__responsiveness:
+            platform = self.__playground.add_platform(
+                width = platform_data['width'],
+                height = platform_data['height'],
+                color = platform_data['background_color'],
+                responsive = True,
+                new_width=919,
+                new_height= 520,
+                padding = 80,
+                pos_y = 0.45
+            )
+
+        else:
+            platform = self.__playground.add_platform(
+                width=platform_data['width'],
+                height=platform_data['height'],
+                color=platform_data['background_color']
+            )
 
         self.__playground.add_walls(
             coordinates = wall_data['coordinates'],
@@ -127,10 +179,11 @@ class PongManager:
         )
 
         if automatic_start:
+            self.__playground.start_roundloop()
             self.__playground.start()
-
+            
         return {
-            "platform_canvas": platform
+            "platform_canvas": platform,
         }
 
     # ? Just data validation checkers
