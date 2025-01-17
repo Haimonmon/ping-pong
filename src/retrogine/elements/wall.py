@@ -99,11 +99,11 @@ class Wall:
         """
 
         self.playground.window.update()
-        print()
-        print('New?', self.coordinates)
-        print('Canvas Width: ', self.__platform.winfo_width())
-        print('Canvas Height: ', self.__platform.winfo_height())
-        print()
+        # print()
+        # print('New?', self.coordinates)
+        # print('Canvas Width: ', self.__platform.winfo_width())
+        # print('Canvas Height: ', self.__platform.winfo_height())
+        # print()
 
         thickened_walls = []
 

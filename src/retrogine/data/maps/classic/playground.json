@@ -44,7 +44,7 @@
             {
                 "width":210,
                 "height": 38,
-                "starting_position": [60,300.0, "vertical"],
+                "starting_position": [120,300.0, "vertical"],
                 "key_binds": "WS",
                 "controlled": "player",
                 "color": "#73A627"
@@ -52,7 +52,7 @@
             {
                 "width":210,
                 "height": 38,
-                "starting_position": [1040,300.0, "vertical"],
+                "starting_position": [980,300.0, "vertical"],
                 "key_binds": "PL",
                 "controlled": "player",
                 "color": "#8373B9"
