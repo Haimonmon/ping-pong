@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Literal
 
 from ..logic import *
 
