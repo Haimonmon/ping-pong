@@ -67,17 +67,38 @@ class Ball:
         self.physics.fix_ball_speed()
 
         # * Parallel Threading for movements in a seperate thread
-        self.thread = threading.Thread(target=self.physics.ball_movement)
-        self.thread.daemon = True
-        self.thread.start()
+        # * Found a way to stop a  thread :3
+        # ? How to stop a thread?: https://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread
+        self.stop_event = threading.Event()
 
+        self.run = True
+
+
+    def thread_is_startin(self) -> bool:
+        """ Checks if thread is running """
+        return not self.stop_event.is_set()
     
+
+    def start(self) -> None:
+        """ Starts thread ball  """
+        self.stop_event.clear()
+        self.thread = threading.Thread(target=self.physics.ball_movement, daemon = True)
+        self.thread.start()
+        
+
+
+    def stop(self) -> None:
+        """ Stops thread ball  """
+        self.stop_event.set()
+        self.run = False
+
+        # if hasattr(self, 'thread') and self.thread.is_alive():
+     
     def render(self) -> int:
         return self.playground.platform.create_oval(self.ball_x_pos - self.size, self.ball_y_pos - self.size, self.ball_x_pos + self.size, self.ball_y_pos + self.size, fill = self.color)
     
-    def stop(self) -> None:
-        self.run = False
-        self.thread.join()
+
+   
 
 
 class CollisionHandler:
@@ -178,7 +199,6 @@ class CollisionHandler:
         """
         Checks for ball vertical wall collision
         """
-
         if (bottom_wall_side[0][1] <= ball_bottom and bottom_wall_side[1][1] >= ball_top and ball_left <= bottom_wall_side[0][0] <= ball_right):
             if self.ball.ball_dx > 0:
                 self.ball.physics.reverse_x_direction() # * Already Locked
@@ -201,14 +221,13 @@ class PhysicsHandler:
 
 
     def ball_movement(self) -> None:
-         """
-         While loop will be on seperated looping task by the help of thread
-         """
-         while self.ball.run:
+        """
+        While loop will be on seperated looping task by the help of thread
+        """
+        while self.ball.thread_is_startin():
             self.move_ball()
             time.sleep(0.01)
-
-
+        
     def move_ball(self) -> None:
         """
         Enable ball movements
@@ -250,7 +269,6 @@ class PhysicsHandler:
         if ball_dx == 0 and ball_dy == 0:
             return self.fix_ball_speed(recursion_attempt + 1)
 
-    
         self.ball.ball_dx = int((ball_dx / magnitude) * self.ball.speed)
         self.ball.ball_dy = int((ball_dy / magnitude) * self.ball.speed)
 

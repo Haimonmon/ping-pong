@@ -64,11 +64,31 @@ class Paddle:
         self.render()
 
         # * Parallel Threading for movements in a seperate thread
+        # * Found a way to stop a  thread :3
+        # ? How to stop a thread?: https://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread
+       
+        self.stop_event = threading.Event()
+
+        self.run = True
+       
+    def thread_is_startin(self) -> bool:
+        """ Checks if thread is running """
+        return not self.stop_event.is_set()
+    
+    def start(self) -> None:
+        """ Start the thread of Paddle :3 """
+        self.stop_event.clear()
         self.thread = threading.Thread(target=self.movement.paddle_movement)
         self.thread.daemon = True
         self.thread.start()
 
+    
+    def stop(self) -> None:
+        """ Stops thread ball  """
+        self.stop_event.set()
+        self.run = False
        
+        
 
     def render(self) -> None:
         """
@@ -79,12 +99,11 @@ class Paddle:
             bottom_line: tk.Canvas = self.platform.create_line(start_bottom[0], start_bottom[1], end_bottom[0], end_bottom[1], fill='black', width = 2.5)
             top_line: tk.Canvas = self.platform.create_line(start_top[0], start_top[1], end_top[0], end_top[1], fill='black', width = 2.5)
 
-            x1 = min(start_bottom[0], end_bottom[0], start_top[0], end_top[0])
-            y1 = min(start_bottom[1], end_bottom[1], start_top[1], end_top[1])
-            x2 = max(start_bottom[0], end_bottom[0], start_top[0], end_top[0])
-            y2 = max(start_bottom[1], end_bottom[1], start_top[1], end_top[1])
+            x1: float = min(start_bottom[0], end_bottom[0], start_top[0], end_top[0])
+            y1: float = min(start_bottom[1], end_bottom[1], start_top[1], end_top[1])
+            x2: float = max(start_bottom[0], end_bottom[0], start_top[0], end_top[0])
+            y2: float = max(start_bottom[1], end_bottom[1], start_top[1], end_top[1])
 
-            # Draw the rectangle
             rectangle: tk.Canvas = self.platform.create_rectangle(x1, y1, x2, y2, width=1, fill = self.color)
 
             # * Save the rendered shapes for later use (movement or removal)
@@ -200,18 +219,15 @@ class PaddleMovementHandler:
         self.paddle.playground.window.bind(self.paddle.keys[0], self.change_direction)
         self.paddle.playground.window.bind(self.paddle.keys[1], self.change_direction)
 
-        self.run = True
 
-  
     def paddle_movement(self):
         """
         Start movement of Paddle
         """
-        while self.run:
+        while self.paddle.thread_is_startin():
             self.continue_move()
             time.sleep(0.01)
-
-
+        
     def continue_move(self) -> None:
         """
         Movements for the paddle will be apply base on the position direction both of its side
@@ -245,7 +261,6 @@ class PaddleMovementHandler:
         """
         Goes ⬆️ Ups and Downs ⬇️
         """
-
         with self.paddle.lock:
             x, y, alignment = self.paddle.position
 
@@ -369,5 +384,4 @@ if __name__ == "__main__":
 
       # TODO:
       # ! Add paddle control customization , this can help for seperate player paddle key handlings
-      # ! Add locking
       # ! Add Paddle Horizontal Collision on wall direction logic
