@@ -53,4 +53,3 @@ class MainMenuUI:
         menu_option_canvas.tag_bind(quit_btn, "<Button-1>",lambda event: self.app.quit())
 
         # self.app_widget.apply_canvas_cursor_auto_move(canvas=menu_option_canvas, point_coordinates=[(162.5, 60), (162.5, 108), (162.5, 157), (162.5, 206)], navigations="WASD", avail_work_navs = [0,2])
-    
