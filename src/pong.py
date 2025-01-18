@@ -13,13 +13,13 @@ class PongClassic:
         self.settings = pages.SettingsUI(self, previous_page = self.main_menu)
         self.gamemodes = pages.GameModesUI(self, previous_page = self.main_menu)
         self.playground_selection = pages.PlayGroundSelection(self, previous_page = self.gamemodes)
-      
+    
         self.window.run(
             func = self.main_menu.render, 
             window_width = 1000,
             window_height = 580, 
             window_title = "Pong Classic ( Alpha )", 
-            resize_status = False, 
+            resize_status = False
         )
 
     def quit(self) -> None:
