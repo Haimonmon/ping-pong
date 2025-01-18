@@ -205,6 +205,12 @@ class WidgetGenerator:
         CanvasKeybindButton(master_canvas, x_coordinate, y_coordinate, image_path = image, width = img_width, height = img_height, text = text,gap = gap, font = font, key_binds = self.__main.key_binds, key_bind_text = key_bind_text).create()
 
 
+    def create_canvas_popper(self,master, x_coordinate: float = 0.5, y_coordinate: float = 0.5, apply_overlay: bool = True, **canvas_attributes: Dict) -> CanvasCanvasPopper:
+        """ Creates a menu popper """
+        canvas = CanvasCanvasPopper(master_canvas= master, x_pos = x_coordinate, y_pos = y_coordinate, apply_overlay = apply_overlay, **canvas_attributes).create()
+
+        return canvas
+
 if __name__ == "__main__":
     widget = WidgetGenerator(tk.Tk())
     widget.create_frame()
