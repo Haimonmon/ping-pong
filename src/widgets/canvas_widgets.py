@@ -1,6 +1,6 @@
 
 from .tk_helpers import GeometryManager , ImageFrames 
-from typing import Dict , Any, List, Callable
+from typing import Dict , Any, List, Callable, Literal
 from abc import ABC, abstractmethod
 from PIL import ImageTk , Image
 import tkinter as tk
@@ -318,7 +318,7 @@ class CanvasJustImage(CanvasWidget):
 
 
 class CanvasImagePopUpHover(CanvasWidget):
-    def __init__(self, master_canvas: tk.Canvas, widget: int, x_coordinate: int, y_coordinate: int, image: tk.Image, debug_show = False, parent_widget_canvas: tk.Canvas = None, page = None, text = None):
+    def __init__(self, master_canvas: tk.Canvas, widget: int, x_coordinate: int, y_coordinate: int, image: tk.Image, debug_show = False, parent_widget_canvas: tk.Canvas = None, page = None, text = None, animate: Literal['ns', 'we'] = None):
         self.__master_canvas = master_canvas
 
         # * Parent canvas of the widget needed to hover
@@ -391,7 +391,8 @@ class CanvasImagePopUpHover(CanvasWidget):
 
         self.__master_canvas.coords(image, self.__x_coordinate, new_y)
 
-        
+        # self.__master_canvas.coords(image, new_y, self.__x_coordinate) # For left and right
+
         if direction == -1: 
             next_direction = 1
         else: 
@@ -508,7 +509,60 @@ class CanvasKeybindButton(CanvasWidget):
                 command()
 
         
-        
+
+class CanvasCanvasPopper(CanvasWidget):
+    def __init__(self, master_canvas: tk.Canvas, x_pos: float = 0.5, y_pos: float = 0.5, apply_overlay: bool = True, **kwargs):
+        self.__master_canvas = master_canvas
+        self.__canvas_attributes = kwargs
+
+        self.__x_pos = x_pos
+        self.__y_pos = y_pos
+
+        self.__apply_overlay = apply_overlay
+
+        self.__menu_canvas = None
+    
+
+    def get_canvas(self) -> None:
+        return self.__menu_canvas
+
+
+    def create(self) -> Callable:
+        self.__menu_canvas = tk.Canvas(self.__master_canvas, self.__canvas_attributes)
+
+        return self
+
+
+    def toggle(self, event = None) -> None:
+        """Show or hide the menu."""   
+        if self.__menu_canvas.winfo_ismapped():
+            self.hide()
+        else:
+            self.show()
+
+
+    def hide(self) -> None:
+        self.__menu_canvas.place_forget()
+        self.apply_overlay()
+
+
+    def show(self) -> None:
+        if self.__apply_overlay:
+            overlay_image = Image.new("RGBA", (self.__master_canvas.winfo_width(), self.__master_canvas.winfo_height()), (29, 49, 60, 128))
+            overlay_tk = ImageTk.PhotoImage(overlay_image)
+            self.__master_canvas.create_image(
+                0, 0, image=overlay_tk, anchor="nw", tags="overlay")
+            self.__master_canvas.image = overlay_tk
+
+        self.__menu_canvas.place(relx=self.__x_pos, rely=self.__y_pos, anchor="center")
+
+    
+    def apply_overlay(self) -> None:
+        if self.__apply_overlay:
+            overlay_id = self.__master_canvas.find_withtag("overlay")
+            if overlay_id:
+                self.__master_canvas.delete("overlay")
+
 
 class CanvasButtonGIF(CanvasWidget):
     def button_gif(self,canvas: tk.Canvas, x: int, y:int ,gif_image: tk.Image): #Soon
