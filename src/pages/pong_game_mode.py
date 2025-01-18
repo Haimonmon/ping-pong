@@ -14,7 +14,9 @@ class GameModesUI:
         """
         Display 3 different types of gamemodes
         """
+        self.app_window.root().unbind("<Escape>")
         self.app_window.clear_page(self.app_widget_list)
+        self.app_window.set_size(width=1000, height=580)
 
         main_canvas = self.app_widget.create_canvas(width=1000, height=580, background="#1D313C", highlightthickness=0, pack={"fill": 'both', "expand": True})
         self.app_widget_list.append(main_canvas)
