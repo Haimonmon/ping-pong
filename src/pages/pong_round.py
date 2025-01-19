@@ -87,11 +87,11 @@ class RoundUI:
         menu_pause_canvas2.toggle()
 
         if self.paused:
-            # * Pause Feature?
+            # * Pause Feature
             prepared_playground.start_roundloop()
             self.paused = False
         else:
-            # * Continue Feature?
+            # * Continue Feature
             prepared_playground.stop_roundloop()
             self.paused = True
 

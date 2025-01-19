@@ -97,7 +97,7 @@ class PlayGroundSelection:
         # print('List: ', self.app_widget_list)
 
     def handle_inputs(self, canvas, play_button, play_icon, gamemode) -> None:
-        self.app_widget.create_canvas_keybind_sign(master_canvas=canvas, key_bind='B', x_coordinate=883, y_coordinate=519,image_path=r'assets\keyboard_bindings.png', img_width=22, img_height=22, text='Back', gap=40, font=("SF Pixelate", 10), command = self.previous_page.render)
+        self.app_widget.create_canvas_keybind_sign(master_canvas=canvas, key_bind='B', x_coordinate=883, y_coordinate=519,image_path=r'src/assets\keyboard_bindings.png', img_width=22, img_height=22, text='Back', gap=40, font=("SF Pixelate", 10), command = self.previous_page.render)
         
         canvas.tag_bind(play_button, "<Button-1>", lambda event: self.game_round.render(playground_name = self.__list_maps[self.current_playground_index]['name'], gamemode = gamemode, gametype='rush'))
         canvas.tag_bind(play_icon, "<Button-1>", lambda event: self.game_round.render(playground_name = self.__list_maps[self.current_playground_index]['name'], gamemode = gamemode, gametype='rush'))
@@ -130,7 +130,7 @@ class PlayGroundSelection:
             self.hovering = True
 
             if self.selected_button != button:
-                event.widget["cursor"] = "@assets/Link.cur"
+                event.widget["cursor"] = "@src/assets/Link.cur"
                 if button:
                     canvas.itemconfig(button, fill = '#F7723A')
                     canvas.after(15,lambda: canvas.move(button, -9, 0))
@@ -141,7 +141,7 @@ class PlayGroundSelection:
             self.hovering = False
 
             if self.selected_button != button:
-                event.widget["cursor"] = "@assets/Alternate.cur"
+                event.widget["cursor"] = "@src/assets/Alternate.cur"
                 if button:
                     canvas.itemconfig(button, fill='#1D313C')
                     canvas.after(15,lambda: canvas.move(button, 9, 0))

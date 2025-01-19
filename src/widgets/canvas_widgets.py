@@ -99,14 +99,14 @@ class CanvasButtonImage(CanvasWidget):
         that results into a hover state form or selected state form
         """
         self.__master_canvas.itemconfig(button,image = selected_image)
-        event.widget["cursor"] = "@assets/Link.cur" #Change mouse cursor into Hand point cursor icon
+        event.widget["cursor"] = "@src/assets/Link.cur" #Change mouse cursor into Hand point cursor icon
 
     def button_image_unhover(self,event: tk.Event ,button: int, unselected_image: tk.Image ) -> None: #!Not Final: Implementing Command Design Pattern
         """ changing image into its original image 
         that results into a unhover state form or unselected state form
         """
         self.__master_canvas.itemconfig(button,image = unselected_image)
-        event.widget["cursor"] = "@assets/Alternate.cur" #Change mouse cursor into its original Arrow cursor icon
+        event.widget["cursor"] = "@src/assets/Alternate.cur" #Change mouse cursor into its original Arrow cursor icon
 
 
 class CanvasButtonText(CanvasWidget):
@@ -151,7 +151,7 @@ class CanvasButtonText(CanvasWidget):
             """ changing the text into another text
                 that results into a hover state form or selected state form
             """
-            event.widget["cursor"] = "@assets/Link.cur"
+            event.widget["cursor"] = "@src/assets/Link.cur"
             self.__master_canvas.itemconfig(button,text = f"{substitute_text}")
             self.__master_canvas.after(15,lambda: self.__master_canvas.move(button,0,-3)) 
 
@@ -159,7 +159,7 @@ class CanvasButtonText(CanvasWidget):
             """ changing the text into its original text
                 that results into a unhover state form or unselected state form
             """
-            event.widget["cursor"] = "@assets/Alternate.cur"
+            event.widget["cursor"] = "@src/assets/Alternate.cur"
             self.__master_canvas.itemconfig(button,text = original_text)
             self.__master_canvas.after(5,lambda: self.__master_canvas.move(button,0,3))
 
@@ -213,10 +213,10 @@ class CanvasButton(CanvasWidget):
             self.__command()
 
     def button_enterhover(self, event, button) -> None:
-        event.widget["cursor"] = "@assets/Link.cur"
+        event.widget["cursor"] = "@src/assets/Link.cur"
 
     def button_leavehover(self, event, button) -> None:
-        event.widget["cursor"] = "@assets/Alternate.cur"
+        event.widget["cursor"] = "@src/assets/Alternate.cur"
         
 
 class CanvasBackgroundGIF(CanvasWidget):
@@ -355,7 +355,7 @@ class CanvasImagePopUpHover(CanvasWidget):
         """
         When hovered, the image on its position will be show by unhiding it
         """
-        event.widget["cursor"] = "@assets/Link.cur"
+        event.widget["cursor"] = "@src/assets/Link.cur"
         self.__master_canvas.itemconfig(image, state = "normal")
         self.__animation_active = True
         self.animate(image, direction = 1)
@@ -368,7 +368,7 @@ class CanvasImagePopUpHover(CanvasWidget):
         """
         When unhovered, the image will hide on its position
         """
-        event.widget["cursor"] = "@assets/Alternate.cur"
+        event.widget["cursor"] = "@src/assets/Alternate.cur"
         self.__animation_active = False
         self.__master_canvas.itemconfig(image, state = "hidden")
 

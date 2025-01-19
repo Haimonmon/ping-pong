@@ -30,10 +30,10 @@ class MainMenuUI:
       
     def display_game_logo(self, canvas) -> None:
         """ Game logo """
-        self.app_widget.create_canvas_image(canvas, 325, 60, orig_image=r"assets\Paddle_Wshadow.png", img_width=33, img_height=140)
-        self.app_widget.create_canvas_image(canvas, 380, 70, orig_image=r"assets\PongTxt_Wshadow.png", img_width=243, img_height=63)
-        self.app_widget.create_canvas_image(canvas, 380, 138, orig_image=r"assets\ClassicTxt_Wshadow.png", img_width=245, img_height=45)
-        self.app_widget.create_canvas_image(canvas, 633, 60, orig_image=r"assets\Paddle_Wshadow.png", img_width=33, img_height=140)
+        self.app_widget.create_canvas_image(canvas, 325, 60, orig_image=r"src\assets\Paddle_Wshadow.png", img_width=33, img_height=140)
+        self.app_widget.create_canvas_image(canvas, 380, 70, orig_image=r"src\assets\PongTxt_Wshadow.png", img_width=243, img_height=63)
+        self.app_widget.create_canvas_image(canvas, 380, 138, orig_image=r"src\assets\ClassicTxt_Wshadow.png", img_width=245, img_height=45)
+        self.app_widget.create_canvas_image(canvas, 633, 60, orig_image=r"src\assets\Paddle_Wshadow.png", img_width=33, img_height=140)
 
 
     def display_options(self, canvas) -> None:
