@@ -14,9 +14,10 @@
 <h4> Recreating the classic ping pong game with the learning of threading and as an added twist where I added some custom levels or what I called playgrounds, though the design or ui theme is colorized unlike the original's black and white theme ( But I will work on it soon ).  
 <br> 
 <br> 
-[ Note ♻️ ] This project stopped for a while and will continue very soon <3>.
+
 </h4>
 
 </div>
 
 <hr>
+[ Note ♻️ ] This project stopped for a while and will continue very soon <3>.
